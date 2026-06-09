@@ -47,16 +47,15 @@
   .url-display { font-size: 11px; color: #6b7280; word-break: break-all; background: #f9fafb; border-radius: 6px; padding: 8px; margin-top: 8px; font-family: monospace; }
   .note { font-size: 12px; color: #9ca3af; margin-top: 12px; line-height: 1.5; }
   .vol-slider-wrap { margin-top: 1rem; }
-  .vol-slider-wrap label { margin-bottom: 8px; }
   input[type=range] { width: 100%; accent-color: #2F557F; }
   .info-box { background: #f0f4f8; border-radius: 8px; padding: 1rem; font-size: 13px; color: #4b5563; line-height: 1.6; }
   .info-box strong { color: #2F557F; }
   .tap-notice { display: none; margin: 10px 0; padding: 12px; background: #dbeafe; border-radius: 8px; text-align: center; font-size: 14px; color: #1d4ed8; cursor: pointer; font-weight: 600; }
   .tap-notice:hover { background: #bfdbfe; }
+  .listeners-count { font-size: 12px; color: #6b7280; margin-top: 8px; text-align: center; }
 </style>
 </head>
 <body>
-
 <div class="container">
   <div class="header">
     <h1>Traduction simultanée</h1>
@@ -87,11 +86,12 @@
       <div class="vol-label">Niveau du micro</div>
       <div class="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
     </div>
+    <div id="listeners-count" class="listeners-count" style="display:none;">0 auditeur(s) connecté(s)</div>
     <div class="qr-section" id="qr-section" style="display:none;">
       <h3>📱 Code QR — Page auditeur</h3>
       <div id="qr-container"><p style="font-size:12px;color:#9ca3af;padding:20px;">Chargement...</p></div>
       <div class="url-display" id="listener-url"></div>
-      <p class="note">Affichez ce QR sur grand écran — les participants scannent avec leur téléphone et écoutent directement dans leur navigateur.</p>
+      <p class="note">Affichez ce QR sur grand écran — les participants scannent avec leur téléphone.</p>
     </div>
   </div>
 
@@ -111,7 +111,7 @@
       <label>Volume</label>
       <input type="range" min="0" max="100" value="90" id="vol-slider" oninput="setAudVolume(this.value)">
     </div>
-    <p class="note" style="margin-top:1rem;">En production, cette page s'ouvre automatiquement via le QR code — aucun code à entrer manuellement.</p>
+    <p class="note" style="margin-top:1rem;">En production, cette page s'ouvre automatiquement via le QR code.</p>
   </div>
 
   <!-- CONFIG -->
@@ -126,20 +126,29 @@
     </div>
     <br>
     <div class="info-box">
-      <strong>Pour déployer :</strong><br><br>
-      ① Mettez ce fichier HTML sur <strong>GitHub Pages</strong> ou <strong>Netlify</strong> (gratuit)<br><br>
-      ② Le QR code contiendra l'URL définitive<br><br>
-      ③ PeerJS Cloud gratuit jusqu'à <strong>50 connexions simultanées</strong> — suffisant pour une Session<br><br>
-      <strong>⚠️ Important :</strong> le micro fonctionne uniquement en <strong>HTTPS</strong> — pas sur file://
+      <strong>Architecture :</strong><br><br>
+      L'interprète diffuse vers tous les auditeurs connectés.<br><br>
+      PeerJS gratuit jusqu'à <strong>50 connexions simultanées</strong>.<br><br>
+      <strong>⚠️ Micro = HTTPS uniquement</strong>
     </div>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-  let micStream=null, peer=null, isMicOn=false, isListening=false;
-  let animFrame=null, listenerPeer=null, audAudio=null, pendingStream=null;
+  // ── STATE ──
+  let micStream = null;
+  let interpPeer = null;
+  let isMicOn = false;
+  let animFrame = null;
+  let activeCalls = [];  // appels actifs vers les auditeurs
 
+  let audPeer = null;
+  let isListening = false;
+  let audAudio = null;
+  let pendingStream = null;
+
+  // ── TABS ──
   function showTab(name) {
     document.querySelectorAll('.tab').forEach((t,i) => {
       t.classList.toggle('active', ['interprete','auditeur','config'][i] === name);
@@ -148,6 +157,7 @@
     document.getElementById('tab-' + name).classList.add('active');
   }
 
+  // ── INTERPRÈTE ──
   async function toggleMic() {
     if (isMicOn) stopMic(); else await startMic();
   }
@@ -156,22 +166,25 @@
     try {
       micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch(e) {
-      alert('Accès au microphone refusé. Veuillez autoriser dans votre navigateur.');
+      alert('Accès au microphone refusé.');
       return;
     }
     isMicOn = true;
-    setInterpStatus('live', '🔴 En direct');
+    setInterpStatus('live', '🔴 En direct — en attente d\'auditeurs');
     document.getElementById('mic-btn').className = 'btn btn-stop';
     document.getElementById('mic-btn').textContent = '⏹ Couper le micro';
     document.getElementById('vol-wrap').style.display = 'block';
+    document.getElementById('listeners-count').style.display = 'block';
     setupAnalyser(micStream);
-    setupPeer(micStream);
+    setupInterpPeer();
   }
 
   function stopMic() {
     isMicOn = false;
+    activeCalls.forEach(c => c.close());
+    activeCalls = [];
     if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
-    if (peer) { peer.destroy(); peer = null; }
+    if (interpPeer) { interpPeer.destroy(); interpPeer = null; }
     if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
     setInterpStatus('off', 'Hors ligne');
     document.getElementById('mic-btn').className = 'btn btn-primary';
@@ -179,12 +192,20 @@
     document.getElementById('vol-wrap').style.display = 'none';
     document.getElementById('vol-fill').style.width = '0%';
     document.getElementById('qr-section').style.display = 'none';
+    document.getElementById('listeners-count').style.display = 'none';
   }
 
   function setInterpStatus(state, text) {
     document.getElementById('interp-status').className = 'status-bar status-' + state;
     document.getElementById('interp-dot').className = 'dot dot-' + state;
     document.getElementById('interp-status-text').textContent = text;
+  }
+
+  function updateListenerCount() {
+    const n = activeCalls.length;
+    document.getElementById('listeners-count').textContent = n + ' auditeur' + (n > 1 ? 's' : '') + ' connecté' + (n > 1 ? 's' : '');
+    if (n > 0) setInterpStatus('live', '🔴 En direct — ' + n + ' auditeur' + (n > 1 ? 's' : ''));
+    else setInterpStatus('live', '🔴 En direct — en attente d\'auditeurs');
   }
 
   function setupAnalyser(stream) {
@@ -202,18 +223,42 @@
     tick();
   }
 
-  function setupPeer(stream) {
+  function setupInterpPeer() {
     const sessionId = document.getElementById('session-id').value.trim() || 'AQM-2026';
-    peer = new Peer('interp-' + sessionId, {
+    // L'interprète écoute sur l'ID "interp-{sessionId}"
+    interpPeer = new Peer('interp-' + sessionId, {
       host: '0.peerjs.com', port: 443, path: '/', secure: true
     });
-    peer.on('open', () => generateQR(sessionId));
-    peer.on('call', call => {
-      call.answer(stream);
-      setInterpStatus('live', '🔴 En direct — auditeur connecté');
+
+    interpPeer.on('open', () => {
+      generateQR(sessionId);
     });
-    peer.on('error', err => {
-      if (err.type === 'unavailable-id') alert('Code de session déjà utilisé. Changez le code dans Config.');
+
+    // Quand un auditeur se connecte en data channel pour signaler sa présence
+    interpPeer.on('connection', conn => {
+      conn.on('open', () => {
+        // L'auditeur a envoyé son ID → on l'appelle avec le micro
+        conn.on('data', auditorId => {
+          if (!micStream) return;
+          const call = interpPeer.call(auditorId, micStream);
+          if (call) {
+            activeCalls.push(call);
+            updateListenerCount();
+            call.on('close', () => {
+              activeCalls = activeCalls.filter(c => c !== call);
+              updateListenerCount();
+            });
+            call.on('error', () => {
+              activeCalls = activeCalls.filter(c => c !== call);
+              updateListenerCount();
+            });
+          }
+        });
+      });
+    });
+
+    interpPeer.on('error', err => {
+      if (err.type === 'unavailable-id') alert('Code déjà utilisé. Changez dans Config.');
       else setInterpStatus('off', 'Erreur : ' + err.type);
     });
   }
@@ -232,6 +277,7 @@
     });
   }
 
+  // ── AUDITEUR ──
   function toggleListen() {
     if (isListening) stopListening(); else startListening();
   }
@@ -243,23 +289,33 @@
     document.getElementById('listen-btn').className = 'btn btn-stop';
     document.getElementById('listen-btn').textContent = '⏹ Arrêter';
 
-    listenerPeer = new Peer(undefined, {
+    // L'auditeur crée son propre peer avec un ID aléatoire
+    audPeer = new Peer({
       host: '0.peerjs.com', port: 443, path: '/', secure: true
     });
 
-    listenerPeer.on('open', () => {
-      const call = listenerPeer.call('interp-' + sessionId, new MediaStream());
-      if (!call) { setAudStatus('off', 'Interprète introuvable'); return; }
-      call.on('stream', remoteStream => {
-        pendingStream = remoteStream;
-        tryPlayAudio(remoteStream);
+    audPeer.on('open', myId => {
+      // L'auditeur se connecte à l'interprète via data channel et envoie son ID
+      const conn = audPeer.connect('interp-' + sessionId);
+      conn.on('open', () => {
+        conn.send(myId);  // envoie son ID à l'interprète
+        setAudStatus('connecting', 'En attente du flux...');
       });
-      call.on('error', () => setAudStatus('off', 'Erreur de connexion'));
-      call.on('close', () => setAudStatus('off', 'Connexion fermée'));
+      conn.on('error', () => setAudStatus('off', 'Erreur de connexion'));
+
+      // L'auditeur attend l'appel de l'interprète
+      audPeer.on('call', call => {
+        call.answer();  // répond sans stream (lecture seulement)
+        call.on('stream', remoteStream => {
+          pendingStream = remoteStream;
+          tryPlayAudio(remoteStream);
+        });
+        call.on('error', () => setAudStatus('off', 'Erreur flux audio'));
+      });
     });
 
-    listenerPeer.on('error', err => {
-      if (err.type === 'peer-unavailable') setAudStatus('off', 'Interprète hors ligne — vérifiez le code');
+    audPeer.on('error', err => {
+      if (err.type === 'peer-unavailable') setAudStatus('off', 'Interprète hors ligne');
       else setAudStatus('off', 'Erreur : ' + err.type);
     });
   }
@@ -287,7 +343,7 @@
 
   function stopListening() {
     isListening = false;
-    if (listenerPeer) { listenerPeer.destroy(); listenerPeer = null; }
+    if (audPeer) { audPeer.destroy(); audPeer = null; }
     if (audAudio) { audAudio.pause(); audAudio = null; }
     pendingStream = null;
     setAudStatus('off', 'En attente');
@@ -305,6 +361,7 @@
 
   function setAudVolume(val) { if (audAudio) audAudio.volume = val / 100; }
 
+  // Auto-switch to auditeur tab if ?session= in URL
   const params = new URLSearchParams(window.location.search);
   if (params.get('session')) {
     showTab('auditeur');

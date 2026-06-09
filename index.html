@@ -20,12 +20,10 @@
   .field { margin-bottom: 1rem; }
   label { display: block; font-size: 13px; color: #6b7280; margin-bottom: 5px; }
   input, select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111; background: white; }
-  input:focus, select:focus { outline: none; border-color: #2F557F; box-shadow: 0 0 0 3px rgba(47,85,127,0.1); }
   .btn { width: 100%; padding: 13px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; margin-bottom: 0.75rem; }
   .btn-primary { background: #2F557F; color: white; }
   .btn-primary:hover { background: #24446a; }
   .btn-stop { background: #ef4444; color: white; }
-  .btn-stop:hover { background: #dc2626; }
   .status-bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; margin-bottom: 1rem; font-size: 13px; font-weight: 500; }
   .status-off { background: #f3f4f6; color: #6b7280; }
   .status-live { background: #dcfce7; color: #15803d; }
@@ -46,13 +44,11 @@
   #qr-container { display: inline-block; padding: 12px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 10px; }
   .url-display { font-size: 11px; color: #6b7280; word-break: break-all; background: #f9fafb; border-radius: 6px; padding: 8px; margin-top: 8px; font-family: monospace; }
   .note { font-size: 12px; color: #9ca3af; margin-top: 12px; line-height: 1.5; }
-  .vol-slider-wrap { margin-top: 1rem; }
-  input[type=range] { width: 100%; accent-color: #2F557F; }
+  input[type=range] { width: 100%; accent-color: #2F557F; margin-top: 6px; }
   .info-box { background: #f0f4f8; border-radius: 8px; padding: 1rem; font-size: 13px; color: #4b5563; line-height: 1.6; }
   .info-box strong { color: #2F557F; }
-  .tap-notice { display: none; margin: 10px 0; padding: 12px; background: #dbeafe; border-radius: 8px; text-align: center; font-size: 14px; color: #1d4ed8; cursor: pointer; font-weight: 600; }
-  .tap-notice:hover { background: #bfdbfe; }
-  .listeners-count { font-size: 12px; color: #6b7280; margin-top: 8px; text-align: center; }
+  .tap-notice { display: none; margin: 10px 0; padding: 14px; background: #dbeafe; border-radius: 8px; text-align: center; font-size: 15px; color: #1d4ed8; cursor: pointer; font-weight: 600; border: 2px solid #93c5fd; }
+  .listeners-count { font-size: 12px; color: #6b7280; margin-top: 6px; text-align: center; }
 </style>
 </head>
 <body>
@@ -61,14 +57,12 @@
     <h1>Traduction simultanée</h1>
     <p id="event-label">Session SDAQC 2026</p>
   </div>
-
   <div class="tabs">
     <button class="tab active" onclick="showTab('interprete')">🎙️ Interprète</button>
     <button class="tab" onclick="showTab('auditeur')">🎧 Auditeur</button>
     <button class="tab" onclick="showTab('config')">⚙️ Config</button>
   </div>
 
-  <!-- INTERPRÈTE -->
   <div id="tab-interprete" class="panel active">
     <div id="interp-status" class="status-bar status-off">
       <span class="dot dot-off" id="interp-dot"></span>
@@ -82,20 +76,19 @@
       </select>
     </div>
     <button class="btn btn-primary" id="mic-btn" onclick="toggleMic()">🎙️ Démarrer le micro</button>
-    <div class="vol-wrap" id="vol-wrap" style="display:none;">
+    <div class="vol-wrap" id="vol-wrap" style="display:none">
       <div class="vol-label">Niveau du micro</div>
       <div class="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
     </div>
-    <div id="listeners-count" class="listeners-count" style="display:none;">0 auditeur(s) connecté(s)</div>
-    <div class="qr-section" id="qr-section" style="display:none;">
+    <div id="listeners-count" class="listeners-count" style="display:none">0 auditeur connecté</div>
+    <div class="qr-section" id="qr-section" style="display:none">
       <h3>📱 Code QR — Page auditeur</h3>
-      <div id="qr-container"><p style="font-size:12px;color:#9ca3af;padding:20px;">Chargement...</p></div>
+      <div id="qr-container"></div>
       <div class="url-display" id="listener-url"></div>
-      <p class="note">Affichez ce QR sur grand écran — les participants scannent avec leur téléphone.</p>
+      <p class="note">Affichez ce QR sur grand écran — les participants scannent et écoutent dans leur navigateur.</p>
     </div>
   </div>
 
-  <!-- AUDITEUR -->
   <div id="tab-auditeur" class="panel">
     <div id="aud-status" class="status-bar status-off">
       <span class="dot dot-off" id="aud-dot"></span>
@@ -103,32 +96,30 @@
     </div>
     <div class="field">
       <label>Code de session</label>
-      <input type="text" id="session-code" placeholder="ex: AQM-2026" value="AQM-2026">
+      <input type="text" id="session-code" value="AQM-2026">
     </div>
     <button class="btn btn-primary" id="listen-btn" onclick="toggleListen()">🎧 Écouter la traduction</button>
-    <div class="tap-notice" id="tap-notice" onclick="unlockAudio()">👆 Appuyer ici pour activer l'audio</div>
-    <div class="vol-slider-wrap">
+    <div class="tap-notice" id="tap-notice" onclick="unlockAudio()">👆 Toucher ici pour activer l'audio</div>
+    <div class="field" style="margin-top:0.5rem">
       <label>Volume</label>
       <input type="range" min="0" max="100" value="90" id="vol-slider" oninput="setAudVolume(this.value)">
     </div>
-    <p class="note" style="margin-top:1rem;">En production, cette page s'ouvre automatiquement via le QR code.</p>
+    <p class="note">En production, cette page s'ouvre via le QR code — aucun code à taper.</p>
   </div>
 
-  <!-- CONFIG -->
   <div id="tab-config" class="panel">
     <div class="field">
       <label>Nom de l'événement</label>
       <input type="text" id="event-name" value="Session SDAQC 2026" oninput="document.getElementById('event-label').textContent=this.value">
     </div>
     <div class="field">
-      <label>Code de session (unique, sans espaces)</label>
-      <input type="text" id="session-id" value="AQM-2026" placeholder="AQM-2026">
+      <label>Code de session (sans espaces)</label>
+      <input type="text" id="session-id" value="AQM-2026">
     </div>
     <br>
     <div class="info-box">
-      <strong>Architecture :</strong><br><br>
-      L'interprète diffuse vers tous les auditeurs connectés.<br><br>
-      PeerJS gratuit jusqu'à <strong>50 connexions simultanées</strong>.<br><br>
+      <strong>Déploiement :</strong> GitHub Pages ou Netlify (gratuit)<br><br>
+      PeerJS gratuit → <strong>50 connexions simultanées</strong><br><br>
       <strong>⚠️ Micro = HTTPS uniquement</strong>
     </div>
   </div>
@@ -136,237 +127,188 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-  // ── STATE ──
-  let micStream = null;
-  let interpPeer = null;
-  let isMicOn = false;
-  let animFrame = null;
-  let activeCalls = [];  // appels actifs vers les auditeurs
+  let micStream=null, interpPeer=null, isMicOn=false, animFrame=null, activeCalls=[];
+  let audPeer=null, isListening=false, audAudio=null, pendingStream=null;
 
-  let audPeer = null;
-  let isListening = false;
-  let audAudio = null;
-  let pendingStream = null;
-
-  // ── TABS ──
-  function showTab(name) {
-    document.querySelectorAll('.tab').forEach((t,i) => {
-      t.classList.toggle('active', ['interprete','auditeur','config'][i] === name);
+  function showTab(n) {
+    ['interprete','auditeur','config'].forEach((name,i)=>{
+      document.querySelectorAll('.tab')[i].classList.toggle('active', name===n);
     });
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-'+n).classList.add('active');
   }
 
   // ── INTERPRÈTE ──
-  async function toggleMic() {
-    if (isMicOn) stopMic(); else await startMic();
-  }
+  async function toggleMic(){ isMicOn ? stopMic() : await startMic(); }
 
-  async function startMic() {
-    try {
-      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch(e) {
-      alert('Accès au microphone refusé.');
-      return;
-    }
-    isMicOn = true;
-    setInterpStatus('live', '🔴 En direct — en attente d\'auditeurs');
-    document.getElementById('mic-btn').className = 'btn btn-stop';
-    document.getElementById('mic-btn').textContent = '⏹ Couper le micro';
-    document.getElementById('vol-wrap').style.display = 'block';
-    document.getElementById('listeners-count').style.display = 'block';
+  async function startMic(){
+    try { micStream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+    catch(e){ alert('Accès micro refusé.'); return; }
+    isMicOn=true;
+    setIS('live','🔴 En direct');
+    document.getElementById('mic-btn').className='btn btn-stop';
+    document.getElementById('mic-btn').textContent='⏹ Couper le micro';
+    document.getElementById('vol-wrap').style.display='block';
+    document.getElementById('listeners-count').style.display='block';
     setupAnalyser(micStream);
     setupInterpPeer();
   }
 
-  function stopMic() {
-    isMicOn = false;
-    activeCalls.forEach(c => c.close());
-    activeCalls = [];
-    if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
-    if (interpPeer) { interpPeer.destroy(); interpPeer = null; }
-    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
-    setInterpStatus('off', 'Hors ligne');
-    document.getElementById('mic-btn').className = 'btn btn-primary';
-    document.getElementById('mic-btn').textContent = '🎙️ Démarrer le micro';
-    document.getElementById('vol-wrap').style.display = 'none';
-    document.getElementById('vol-fill').style.width = '0%';
-    document.getElementById('qr-section').style.display = 'none';
-    document.getElementById('listeners-count').style.display = 'none';
+  function stopMic(){
+    isMicOn=false;
+    activeCalls.forEach(c=>{ try{c.close();}catch(e){} });
+    activeCalls=[];
+    if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
+    if(interpPeer){ interpPeer.destroy(); interpPeer=null; }
+    if(animFrame){ cancelAnimationFrame(animFrame); animFrame=null; }
+    setIS('off','Hors ligne');
+    document.getElementById('mic-btn').className='btn btn-primary';
+    document.getElementById('mic-btn').textContent='🎙️ Démarrer le micro';
+    document.getElementById('vol-wrap').style.display='none';
+    document.getElementById('listeners-count').style.display='none';
+    document.getElementById('qr-section').style.display='none';
   }
 
-  function setInterpStatus(state, text) {
-    document.getElementById('interp-status').className = 'status-bar status-' + state;
-    document.getElementById('interp-dot').className = 'dot dot-' + state;
-    document.getElementById('interp-status-text').textContent = text;
+  function setIS(s,t){
+    document.getElementById('interp-status').className='status-bar status-'+s;
+    document.getElementById('interp-dot').className='dot dot-'+s;
+    document.getElementById('interp-status-text').textContent=t;
   }
 
-  function updateListenerCount() {
-    const n = activeCalls.length;
-    document.getElementById('listeners-count').textContent = n + ' auditeur' + (n > 1 ? 's' : '') + ' connecté' + (n > 1 ? 's' : '');
-    if (n > 0) setInterpStatus('live', '🔴 En direct — ' + n + ' auditeur' + (n > 1 ? 's' : ''));
-    else setInterpStatus('live', '🔴 En direct — en attente d\'auditeurs');
+  function updateCount(){
+    const n=activeCalls.length;
+    document.getElementById('listeners-count').textContent=n+' auditeur'+(n>1?'s':'')+' connecté'+(n>1?'s':'');
   }
 
-  function setupAnalyser(stream) {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
-    ctx.createMediaStreamSource(stream).connect(analyser);
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    function tick() {
-      analyser.getByteFrequencyData(data);
-      const avg = data.reduce((a,b) => a+b, 0) / data.length;
-      document.getElementById('vol-fill').style.width = Math.min(100, avg * 3) + '%';
-      animFrame = requestAnimationFrame(tick);
+  function setupAnalyser(stream){
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const an=ctx.createAnalyser(); an.fftSize=256;
+    ctx.createMediaStreamSource(stream).connect(an);
+    const d=new Uint8Array(an.frequencyBinCount);
+    function tick(){
+      an.getByteFrequencyData(d);
+      const avg=d.reduce((a,b)=>a+b,0)/d.length;
+      document.getElementById('vol-fill').style.width=Math.min(100,avg*3)+'%';
+      animFrame=requestAnimationFrame(tick);
     }
     tick();
   }
 
-  function setupInterpPeer() {
-    const sessionId = document.getElementById('session-id').value.trim() || 'AQM-2026';
-    // L'interprète écoute sur l'ID "interp-{sessionId}"
-    interpPeer = new Peer('interp-' + sessionId, {
-      host: '0.peerjs.com', port: 443, path: '/', secure: true
+  function setupInterpPeer(){
+    const sid=document.getElementById('session-id').value.trim()||'AQM-2026';
+    interpPeer=new Peer('interp-'+sid,{host:'0.peerjs.com',port:443,path:'/',secure:true});
+    interpPeer.on('open',()=>generateQR(sid));
+
+    // Auditeur appelle l'interprète avec un stream silencieux
+    interpPeer.on('call', call=>{
+      // On répond avec le vrai stream micro
+      call.answer(micStream);
+      activeCalls.push(call);
+      updateCount();
+      setIS('live','🔴 En direct — '+activeCalls.length+' auditeur'+(activeCalls.length>1?'s':''));
+      call.on('close',()=>{ activeCalls=activeCalls.filter(c=>c!==call); updateCount(); });
+      call.on('error',()=>{ activeCalls=activeCalls.filter(c=>c!==call); updateCount(); });
     });
 
-    interpPeer.on('open', () => {
-      generateQR(sessionId);
-    });
-
-    // Quand un auditeur se connecte en data channel pour signaler sa présence
-    interpPeer.on('connection', conn => {
-      conn.on('open', () => {
-        // L'auditeur a envoyé son ID → on l'appelle avec le micro
-        conn.on('data', auditorId => {
-          if (!micStream) return;
-          const call = interpPeer.call(auditorId, micStream);
-          if (call) {
-            activeCalls.push(call);
-            updateListenerCount();
-            call.on('close', () => {
-              activeCalls = activeCalls.filter(c => c !== call);
-              updateListenerCount();
-            });
-            call.on('error', () => {
-              activeCalls = activeCalls.filter(c => c !== call);
-              updateListenerCount();
-            });
-          }
-        });
-      });
-    });
-
-    interpPeer.on('error', err => {
-      if (err.type === 'unavailable-id') alert('Code déjà utilisé. Changez dans Config.');
-      else setInterpStatus('off', 'Erreur : ' + err.type);
+    interpPeer.on('error',err=>{
+      if(err.type==='unavailable-id') alert('Code déjà utilisé — changez dans Config.');
+      else setIS('off','Erreur: '+err.type);
     });
   }
 
-  function generateQR(sessionId) {
-    const base = window.location.href.split('?')[0];
-    const url = base + '?session=' + encodeURIComponent(sessionId);
-    document.getElementById('listener-url').textContent = url;
-    document.getElementById('qr-section').style.display = 'block';
-    const container = document.getElementById('qr-container');
-    container.innerHTML = '';
-    new QRCode(container, {
-      text: url, width: 160, height: 160,
-      colorDark: '#000000', colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
+  function generateQR(sid){
+    const base=window.location.href.split('?')[0];
+    const url=base+'?session='+encodeURIComponent(sid);
+    document.getElementById('listener-url').textContent=url;
+    document.getElementById('qr-section').style.display='block';
+    const c=document.getElementById('qr-container'); c.innerHTML='';
+    new QRCode(c,{text:url,width:160,height:160,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
   }
 
   // ── AUDITEUR ──
-  function toggleListen() {
-    if (isListening) stopListening(); else startListening();
+  function toggleListen(){ isListening ? stopListening() : startListening(); }
+
+  function startListening(){
+    isListening=true;
+    const sid=document.getElementById('session-code').value.trim()||'AQM-2026';
+    setAS('connecting','Connexion en cours...');
+    document.getElementById('listen-btn').className='btn btn-stop';
+    document.getElementById('listen-btn').textContent='⏹ Arrêter';
+
+    audPeer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true});
+
+    audPeer.on('open',()=>{
+      // Créer un stream silencieux pour initier l'appel (requis par WebRTC)
+      const ctx=new(window.AudioContext||window.webkitAudioContext)();
+      const dest=ctx.createMediaStreamDestination();
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      gain.gain.value=0; // silencieux
+      osc.connect(gain);
+      gain.connect(dest);
+      osc.start();
+      const silentStream=dest.stream;
+
+      const call=audPeer.call('interp-'+sid, silentStream);
+      if(!call){ setAS('off','Interprète introuvable'); return; }
+
+      call.on('stream', remote=>{
+        pendingStream=remote;
+        tryPlayAudio(remote);
+      });
+      call.on('error',()=>setAS('off','Erreur flux'));
+      call.on('close',()=>setAS('off','Connexion fermée'));
+    });
+
+    audPeer.on('error',err=>{
+      if(err.type==='peer-unavailable') setAS('off','Interprète hors ligne — vérifiez le code');
+      else setAS('off','Erreur: '+err.type);
+    });
   }
 
-  function startListening() {
-    isListening = true;
-    const sessionId = document.getElementById('session-code').value.trim() || 'AQM-2026';
-    setAudStatus('connecting', 'Connexion en cours...');
-    document.getElementById('listen-btn').className = 'btn btn-stop';
-    document.getElementById('listen-btn').textContent = '⏹ Arrêter';
-
-    // L'auditeur crée son propre peer avec un ID aléatoire
-    audPeer = new Peer({
-      host: '0.peerjs.com', port: 443, path: '/', secure: true
-    });
-
-    audPeer.on('open', myId => {
-      // L'auditeur se connecte à l'interprète via data channel et envoie son ID
-      const conn = audPeer.connect('interp-' + sessionId);
-      conn.on('open', () => {
-        conn.send(myId);  // envoie son ID à l'interprète
-        setAudStatus('connecting', 'En attente du flux...');
-      });
-      conn.on('error', () => setAudStatus('off', 'Erreur de connexion'));
-
-      // L'auditeur attend l'appel de l'interprète
-      audPeer.on('call', call => {
-        call.answer();  // répond sans stream (lecture seulement)
-        call.on('stream', remoteStream => {
-          pendingStream = remoteStream;
-          tryPlayAudio(remoteStream);
-        });
-        call.on('error', () => setAudStatus('off', 'Erreur flux audio'));
-      });
-    });
-
-    audPeer.on('error', err => {
-      if (err.type === 'peer-unavailable') setAudStatus('off', 'Interprète hors ligne');
-      else setAudStatus('off', 'Erreur : ' + err.type);
-    });
-  }
-
-  function tryPlayAudio(stream) {
-    audAudio = new Audio();
-    audAudio.srcObject = stream;
-    audAudio.volume = document.getElementById('vol-slider').value / 100;
-    const p = audAudio.play();
-    if (p !== undefined) {
-      p.then(() => {
-        setAudStatus('listening', '🔵 Écoute en direct');
-        document.getElementById('tap-notice').style.display = 'none';
-      }).catch(() => {
-        setAudStatus('connecting', 'Appuyer pour activer');
-        document.getElementById('tap-notice').style.display = 'block';
+  function tryPlayAudio(stream){
+    audAudio=new Audio();
+    audAudio.srcObject=stream;
+    audAudio.volume=document.getElementById('vol-slider').value/100;
+    const p=audAudio.play();
+    if(p!==undefined){
+      p.then(()=>{
+        setAS('listening','🔵 Écoute en direct');
+        document.getElementById('tap-notice').style.display='none';
+      }).catch(()=>{
+        setAS('connecting','Toucher pour activer');
+        document.getElementById('tap-notice').style.display='block';
       });
     }
   }
 
-  function unlockAudio() {
-    document.getElementById('tap-notice').style.display = 'none';
-    if (pendingStream) tryPlayAudio(pendingStream);
+  function unlockAudio(){
+    document.getElementById('tap-notice').style.display='none';
+    if(pendingStream) tryPlayAudio(pendingStream);
   }
 
-  function stopListening() {
-    isListening = false;
-    if (audPeer) { audPeer.destroy(); audPeer = null; }
-    if (audAudio) { audAudio.pause(); audAudio = null; }
-    pendingStream = null;
-    setAudStatus('off', 'En attente');
-    document.getElementById('tap-notice').style.display = 'none';
-    document.getElementById('listen-btn').className = 'btn btn-primary';
-    document.getElementById('listen-btn').textContent = '🎧 Écouter la traduction';
+  function stopListening(){
+    isListening=false;
+    if(audPeer){ audPeer.destroy(); audPeer=null; }
+    if(audAudio){ audAudio.pause(); audAudio=null; }
+    pendingStream=null;
+    setAS('off','En attente');
+    document.getElementById('tap-notice').style.display='none';
+    document.getElementById('listen-btn').className='btn btn-primary';
+    document.getElementById('listen-btn').textContent='🎧 Écouter la traduction';
   }
 
-  function setAudStatus(state, text) {
-    const cls = state === 'listening' ? 'listening' : state === 'connecting' ? 'connecting' : 'off';
-    document.getElementById('aud-status').className = 'status-bar status-' + cls;
-    document.getElementById('aud-dot').className = 'dot dot-' + cls;
-    document.getElementById('aud-status-text').textContent = text;
+  function setAS(s,t){
+    const cls=s==='listening'?'listening':s==='connecting'?'connecting':'off';
+    document.getElementById('aud-status').className='status-bar status-'+cls;
+    document.getElementById('aud-dot').className='dot dot-'+cls;
+    document.getElementById('aud-status-text').textContent=t;
   }
 
-  function setAudVolume(val) { if (audAudio) audAudio.volume = val / 100; }
+  function setAudVolume(v){ if(audAudio) audAudio.volume=v/100; }
 
-  // Auto-switch to auditeur tab if ?session= in URL
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('session')) {
-    showTab('auditeur');
-    document.getElementById('session-code').value = params.get('session');
-  }
+  const p=new URLSearchParams(window.location.search);
+  if(p.get('session')){ showTab('auditeur'); document.getElementById('session-code').value=p.get('session'); }
 </script>
 </body>
 </html>

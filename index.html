@@ -308,7 +308,14 @@
   function setAudVolume(v){ if(audAudio) audAudio.volume=v/100; }
 
   const p=new URLSearchParams(window.location.search);
-  if(p.get('session')){ showTab('auditeur'); document.getElementById('session-code').value=p.get('session'); }
+  if(p.get('session')){
+    // Mode auditeur uniquement — cacher interprète et config
+    document.querySelector('.tabs').style.display='none';
+    document.getElementById('tab-interprete').classList.remove('active');
+    document.getElementById('tab-config').classList.remove('active');
+    document.getElementById('tab-auditeur').classList.add('active');
+    document.getElementById('session-code').value=p.get('session');
+  }
 </script>
 </body>
 </html>

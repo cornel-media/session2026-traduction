@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traduction simultanée — Session SDAQC 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .container { background: white; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.1); max-width: 420px; width: 100%; overflow: hidden; }
+  .header { background: #2F557F; color: white; padding: 1.25rem 1.5rem; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+  .tabs { display: flex; border-bottom: 1px solid #e5e7eb; }
+  .tab { flex: 1; padding: 12px; font-size: 14px; font-weight: 500; background: none; border: none; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab.active { color: #2F557F; border-bottom-color: #2F557F; }
+  .panel { display: none; padding: 1.5rem; }
+  .panel.active { display: block; }
+  .field { margin-bottom: 1rem; }
+  label { display: block; font-size: 13px; color: #6b7280; margin-bottom: 5px; }
+  input, select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111; background: white; }
+  input:focus, select:focus { outline: none; border-color: #2F557F; box-shadow: 0 0 0 3px rgba(47,85,127,0.1); }
+  .btn { width: 100%; padding: 13px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; margin-bottom: 0.75rem; }
+  .btn-primary { background: #2F557F; color: white; }
+  .btn-primary:hover { background: #24446a; }
+  .btn-stop { background: #ef4444; color: white; }
+  .btn-stop:hover { background: #dc2626; }
+  .status-bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; margin-bottom: 1rem; font-size: 13px; font-weight: 500; }
+  .status-off { background: #f3f4f6; color: #6b7280; }
+  .status-live { background: #dcfce7; color: #15803d; }
+  .status-connecting { background: #fef9c3; color: #854d0e; }
+  .status-listening { background: #dbeafe; color: #1d4ed8; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-off { background: #9ca3af; }
+  .dot-live { background: #22c55e; animation: blink 1.2s infinite; }
+  .dot-connecting { background: #eab308; animation: blink 0.8s infinite; }
+  .dot-listening { background: #3b82f6; animation: blink 1.2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .vol-wrap { margin: 12px 0; }
+  .vol-label { font-size: 12px; color: #9ca3af; margin-bottom: 4px; }
+  .vol-bar { height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+  .vol-fill { height: 100%; width: 0%; background: #22c55e; border-radius: 3px; transition: width 0.08s; }
+  .qr-section { text-align: center; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #e5e7eb; }
+  .qr-section h3 { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px; }
+  #qr-container { display: inline-block; padding: 12px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 10px; }
+  .url-display { font-size: 11px; color: #6b7280; word-break: break-all; background: #f9fafb; border-radius: 6px; padding: 8px; margin-top: 8px; font-family: monospace; }
+  .note { font-size: 12px; color: #9ca3af; margin-top: 12px; line-height: 1.5; }
+  .vol-slider-wrap { margin-top: 1rem; }
+  .vol-slider-wrap label { margin-bottom: 8px; }
+  input[type=range] { width: 100%; accent-color: #2F557F; }
+  .info-box { background: #f0f4f8; border-radius: 8px; padding: 1rem; font-size: 13px; color: #4b5563; line-height: 1.6; }
+  .info-box strong { color: #2F557F; }
+  .tap-notice { display: none; margin: 10px 0; padding: 12px; background: #dbeafe; border-radius: 8px; text-align: center; font-size: 14px; color: #1d4ed8; cursor: pointer; font-weight: 600; }
+  .tap-notice:hover { background: #bfdbfe; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Traduction simultanée</h1>
+    <p id="event-label">Session SDAQC 2026</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('interprete')">🎙️ Interprète</button>
+    <button class="tab" onclick="showTab('auditeur')">🎧 Auditeur</button>
+    <button class="tab" onclick="showTab('config')">⚙️ Config</button>
+  </div>
+
+  <!-- INTERPRÈTE -->
+  <div id="tab-interprete" class="panel active">
+    <div id="interp-status" class="status-bar status-off">
+      <span class="dot dot-off" id="interp-dot"></span>
+      <span id="interp-status-text">Hors ligne</span>
+    </div>
+    <div class="field">
+      <label>Canal</label>
+      <select id="canal">
+        <option value="fr-en">Français → Anglais</option>
+        <option value="en-fr">Anglais → Français</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" id="mic-btn" onclick="toggleMic()">🎙️ Démarrer le micro</button>
+    <div class="vol-wrap" id="vol-wrap" style="display:none;">
+      <div class="vol-label">Niveau du micro</div>
+      <div class="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
+    </div>
+    <div class="qr-section" id="qr-section" style="display:none;">
+      <h3>📱 Code QR — Page auditeur</h3>
+      <div id="qr-container"><p style="font-size:12px;color:#9ca3af;padding:20px;">Chargement...</p></div>
+      <div class="url-display" id="listener-url"></div>
+      <p class="note">Affichez ce QR sur grand écran — les participants scannent avec leur téléphone et écoutent directement dans leur navigateur.</p>
+    </div>
+  </div>
+
+  <!-- AUDITEUR -->
+  <div id="tab-auditeur" class="panel">
+    <div id="aud-status" class="status-bar status-off">
+      <span class="dot dot-off" id="aud-dot"></span>
+      <span id="aud-status-text">En attente</span>
+    </div>
+    <div class="field">
+      <label>Code de session</label>
+      <input type="text" id="session-code" placeholder="ex: AQM-2026" value="AQM-2026">
+    </div>
+    <button class="btn btn-primary" id="listen-btn" onclick="toggleListen()">🎧 Écouter la traduction</button>
+    <div class="tap-notice" id="tap-notice" onclick="unlockAudio()">👆 Appuyer ici pour activer l'audio</div>
+    <div class="vol-slider-wrap">
+      <label>Volume</label>
+      <input type="range" min="0" max="100" value="90" id="vol-slider" oninput="setAudVolume(this.value)">
+    </div>
+    <p class="note" style="margin-top:1rem;">En production, cette page s'ouvre automatiquement via le QR code — aucun code à entrer manuellement.</p>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="tab-config" class="panel">
+    <div class="field">
+      <label>Nom de l'événement</label>
+      <input type="text" id="event-name" value="Session SDAQC 2026" oninput="document.getElementById('event-label').textContent=this.value">
+    </div>
+    <div class="field">
+      <label>Code de session (unique, sans espaces)</label>
+      <input type="text" id="session-id" value="AQM-2026" placeholder="AQM-2026">
+    </div>
+    <br>
+    <div class="info-box">
+      <strong>Pour déployer :</strong><br><br>
+      ① Mettez ce fichier HTML sur <strong>GitHub Pages</strong> ou <strong>Netlify</strong> (gratuit)<br><br>
+      ② Le QR code contiendra l'URL définitive<br><br>
+      ③ PeerJS Cloud gratuit jusqu'à <strong>50 connexions simultanées</strong> — suffisant pour une Session<br><br>
+      <strong>⚠️ Important :</strong> le micro fonctionne uniquement en <strong>HTTPS</strong> — pas sur file://
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  let micStream=null, peer=null, isMicOn=false, isListening=false;
+  let animFrame=null, listenerPeer=null, audAudio=null, pendingStream=null;
+
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => {
+      t.classList.toggle('active', ['interprete','auditeur','config'][i] === name);
+    });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  async function toggleMic() {
+    if (isMicOn) stopMic(); else await startMic();
+  }
+
+  async function startMic() {
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch(e) {
+      alert('Accès au microphone refusé. Veuillez autoriser dans votre navigateur.');
+      return;
+    }
+    isMicOn = true;
+    setInterpStatus('live', '🔴 En direct');
+    document.getElementById('mic-btn').className = 'btn btn-stop';
+    document.getElementById('mic-btn').textContent = '⏹ Couper le micro';
+    document.getElementById('vol-wrap').style.display = 'block';
+    setupAnalyser(micStream);
+    setupPeer(micStream);
+  }
+
+  function stopMic() {
+    isMicOn = false;
+    if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+    if (peer) { peer.destroy(); peer = null; }
+    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+    setInterpStatus('off', 'Hors ligne');
+    document.getElementById('mic-btn').className = 'btn btn-primary';
+    document.getElementById('mic-btn').textContent = '🎙️ Démarrer le micro';
+    document.getElementById('vol-wrap').style.display = 'none';
+    document.getElementById('vol-fill').style.width = '0%';
+    document.getElementById('qr-section').style.display = 'none';
+  }
+
+  function setInterpStatus(state, text) {
+    document.getElementById('interp-status').className = 'status-bar status-' + state;
+    document.getElementById('interp-dot').className = 'dot dot-' + state;
+    document.getElementById('interp-status-text').textContent = text;
+  }
+
+  function setupAnalyser(stream) {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+    ctx.createMediaStreamSource(stream).connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    function tick() {
+      analyser.getByteFrequencyData(data);
+      const avg = data.reduce((a,b) => a+b, 0) / data.length;
+      document.getElementById('vol-fill').style.width = Math.min(100, avg * 3) + '%';
+      animFrame = requestAnimationFrame(tick);
+    }
+    tick();
+  }
+
+  function setupPeer(stream) {
+    const sessionId = document.getElementById('session-id').value.trim() || 'AQM-2026';
+    peer = new Peer('interp-' + sessionId, {
+      host: '0.peerjs.com', port: 443, path: '/', secure: true
+    });
+    peer.on('open', () => generateQR(sessionId));
+    peer.on('call', call => {
+      call.answer(stream);
+      setInterpStatus('live', '🔴 En direct — auditeur connecté');
+    });
+    peer.on('error', err => {
+      if (err.type === 'unavailable-id') alert('Code de session déjà utilisé. Changez le code dans Config.');
+      else setInterpStatus('off', 'Erreur : ' + err.type);
+    });
+  }
+
+  function generateQR(sessionId) {
+    const base = window.location.href.split('?')[0];
+    const url = base + '?session=' + encodeURIComponent(sessionId);
+    document.getElementById('listener-url').textContent = url;
+    document.getElementById('qr-section').style.display = 'block';
+    const container = document.getElementById('qr-container');
+    container.innerHTML = '';
+    new QRCode(container, {
+      text: url, width: 160, height: 160,
+      colorDark: '#000000', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+
+  function toggleListen() {
+    if (isListening) stopListening(); else startListening();
+  }
+
+  function startListening() {
+    isListening = true;
+    const sessionId = document.getElementById('session-code').value.trim() || 'AQM-2026';
+    setAudStatus('connecting', 'Connexion en cours...');
+    document.getElementById('listen-btn').className = 'btn btn-stop';
+    document.getElementById('listen-btn').textContent = '⏹ Arrêter';
+
+    listenerPeer = new Peer(undefined, {
+      host: '0.peerjs.com', port: 443, path: '/', secure: true
+    });
+
+    listenerPeer.on('open', () => {
+      const call = listenerPeer.call('interp-' + sessionId, new MediaStream());
+      if (!call) { setAudStatus('off', 'Interprète introuvable'); return; }
+      call.on('stream', remoteStream => {
+        pendingStream = remoteStream;
+        tryPlayAudio(remoteStream);
+      });
+      call.on('error', () => setAudStatus('off', 'Erreur de connexion'));
+      call.on('close', () => setAudStatus('off', 'Connexion fermée'));
+    });
+
+    listenerPeer.on('error', err => {
+      if (err.type === 'peer-unavailable') setAudStatus('off', 'Interprète hors ligne — vérifiez le code');
+      else setAudStatus('off', 'Erreur : ' + err.type);
+    });
+  }
+
+  function tryPlayAudio(stream) {
+    audAudio = new Audio();
+    audAudio.srcObject = stream;
+    audAudio.volume = document.getElementById('vol-slider').value / 100;
+    const p = audAudio.play();
+    if (p !== undefined) {
+      p.then(() => {
+        setAudStatus('listening', '🔵 Écoute en direct');
+        document.getElementById('tap-notice').style.display = 'none';
+      }).catch(() => {
+        setAudStatus('connecting', 'Appuyer pour activer');
+        document.getElementById('tap-notice').style.display = 'block';
+      });
+    }
+  }
+
+  function unlockAudio() {
+    document.getElementById('tap-notice').style.display = 'none';
+    if (pendingStream) tryPlayAudio(pendingStream);
+  }
+
+  function stopListening() {
+    isListening = false;
+    if (listenerPeer) { listenerPeer.destroy(); listenerPeer = null; }
+    if (audAudio) { audAudio.pause(); audAudio = null; }
+    pendingStream = null;
+    setAudStatus('off', 'En attente');
+    document.getElementById('tap-notice').style.display = 'none';
+    document.getElementById('listen-btn').className = 'btn btn-primary';
+    document.getElementById('listen-btn').textContent = '🎧 Écouter la traduction';
+  }
+
+  function setAudStatus(state, text) {
+    const cls = state === 'listening' ? 'listening' : state === 'connecting' ? 'connecting' : 'off';
+    document.getElementById('aud-status').className = 'status-bar status-' + cls;
+    document.getElementById('aud-dot').className = 'dot dot-' + cls;
+    document.getElementById('aud-status-text').textContent = text;
+  }
+
+  function setAudVolume(val) { if (audAudio) audAudio.volume = val / 100; }
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('session')) {
+    showTab('auditeur');
+    document.getElementById('session-code').value = params.get('session');
+  }
+</script>
+</body>
+</html>

@@ -202,7 +202,9 @@
     // Auditeur appelle l'interprète avec un stream silencieux
     interpPeer.on('call', call=>{
       // On répond avec le vrai stream micro
-      call.answer(micStream);
+      // Cloner le stream pour chaque auditeur
+      const clonedStream = micStream.clone();
+      call.answer(clonedStream);
       activeCalls.push(call);
       updateCount();
       setIS('live','🔴 En direct — '+activeCalls.length+' auditeur'+(activeCalls.length>1?'s':''));

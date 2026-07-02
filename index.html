@@ -275,6 +275,7 @@
       p.then(()=>{
         setAS('listening','🔵 Écoute en direct');
         document.getElementById('tap-notice').style.display='none';
+        requestWakeLock();
       }).catch(()=>{
         setAS('connecting','Toucher pour activer');
         document.getElementById('tap-notice').style.display='block';
@@ -287,8 +288,26 @@
     if(pendingStream) tryPlayAudio(pendingStream);
   }
 
+  // Wake Lock — empêche l'écran de se mettre en veille
+  let wakeLock=null;
+  async function requestWakeLock(){
+    if('wakeLock' in navigator){
+      try{
+        wakeLock=await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release',()=>{ if(isListening) requestWakeLock(); });
+      }catch(e){}
+    }
+  }
+  async function releaseWakeLock(){
+    if(wakeLock){ await wakeLock.release(); wakeLock=null; }
+  }
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible' && isListening) requestWakeLock();
+  });
+
   function stopListening(){
     isListening=false;
+    releaseWakeLock();
     if(audPeer){ audPeer.destroy(); audPeer=null; }
     if(audAudio){ audAudio.pause(); audAudio=null; }
     pendingStream=null;

@@ -63,7 +63,7 @@
     <button class="tab" onclick="showTab('config')">⚙️ Config</button>
   </div>
 
-  <!-- INTERPRÈTE -->
+  <!-- INTERPRÈTE (français — équipe interne) -->
   <div id="tab-interprete" class="panel active">
     <div id="interp-status" class="status-bar status-off">
       <span class="dot dot-off" id="interp-dot"></span>
@@ -91,23 +91,23 @@
     </div>
   </div>
 
-  <!-- AUDITEUR -->
+  <!-- AUDITEUR (bilingue FR/EN) -->
   <div id="tab-auditeur" class="panel">
     <div id="aud-status" class="status-bar status-off">
       <span class="dot dot-off" id="aud-dot"></span>
-      <span id="aud-status-text">En attente</span>
+      <span id="aud-status-text">En attente / Waiting</span>
     </div>
     <div class="field">
-      <label>Code de session</label>
+      <label>Code de session / Session code</label>
       <input type="text" id="session-code" value="AQM-2026">
     </div>
-    <button class="btn btn-primary" id="listen-btn" onclick="toggleListen()">🎧 Écouter la traduction</button>
-    <div class="tap-notice" id="tap-notice" onclick="unlockAudio()">👆 Toucher ici pour activer l'audio</div>
+    <button class="btn btn-primary" id="listen-btn" onclick="toggleListen()">🎧 Écouter / Listen</button>
+    <div class="tap-notice" id="tap-notice" onclick="unlockAudio()">👆 Toucher ici pour activer l'audio<br>Tap here to enable audio</div>
     <div class="field" style="margin-top:0.5rem;">
       <label>Volume</label>
       <input type="range" min="0" max="100" value="90" id="vol-slider" oninput="setAudVolume(this.value)">
     </div>
-    <p class="note">En production, cette page s'ouvre automatiquement via le QR code.</p>
+    <p class="note">Restez connecté pendant les silences — l'audio reprend automatiquement.<br>Stay connected during silences — audio resumes automatically.</p>
   </div>
 
   <!-- CONFIG -->
@@ -124,7 +124,6 @@
     <div class="info-box">
       <strong>Système :</strong> LiveKit Cloud (SFU)<br><br>
       Supporte <strong>500+ auditeurs simultanés</strong><br><br>
-      Gratuit jusqu'à 100 000 minutes/mois<br><br>
       <strong>⚠️ Micro = HTTPS uniquement</strong>
     </div>
   </div>
@@ -136,22 +135,37 @@
 <script>
   // ═══ CONFIGURATION LIVEKIT ═══
   const SANDBOX_ID = 'session2026traduction-21f7gk';
-  const TOKEN_ENDPOINT = 'https://cloud-api.livekit.io/api/sandbox/connection-details';
-
+  const APP_V = '3';
   const LK = LivekitClient;
+
   let interpRoom = null, audRoom = null;
   let isMicOn = false, isListening = false;
-  let animFrame = null, wakeLock = null, pendingPlay = false;
+  let animFrame = null, wakeLock = null;
+
+  // ═══ TEXTES BILINGUES AUDITEUR ═══
+  const B = {
+    wait: 'En attente / Waiting',
+    connecting: 'Connexion... / Connecting...',
+    connected: 'Connecté — en attente de l\'audio / Waiting for audio',
+    listening: '🔵 Écoute en direct / Listening live',
+    pause: 'Canal en pause — restez connecté / Paused — stay connected',
+    reconnecting: '⚠️ Reconnexion... / Reconnecting...',
+    listen: '🎧 Écouter / Listen',
+    stop: '⏹ Arrêter / Stop',
+    tapShort: 'Toucher pour activer / Tap to enable',
+    audioBlocked: 'Audio bloqué — rechargez / blocked — reload',
+    offline: 'Interprète hors ligne / Interpreter offline',
+    error: 'Erreur / Error: '
+  };
 
   // ═══ TOKEN ═══
   async function getConnectionDetails(roomName, identity) {
     const tokenSource = LK.TokenSource.sandboxTokenServer(SANDBOX_ID);
-    const details = await tokenSource.fetch({
+    return await tokenSource.fetch({
       roomName: roomName,
       participantName: identity,
       participantIdentity: identity
     });
-    return details; // { serverUrl, participantToken }
   }
 
   // ═══ TABS ═══
@@ -174,35 +188,28 @@
     try {
       const details = await getConnectionDetails(sessionId, 'interprete-' + Math.random().toString(36).substr(2,6));
       interpRoom = new LK.Room({ disconnectOnPageLeave: false });
-      await interpRoom.connect(details.serverUrl, details.participantToken);
-      await interpRoom.localParticipant.setMicrophoneEnabled(true);
-      isMicOn = true;
-
-      setInterpStatus('live', '🔴 En direct — salle: ' + interpRoom.name);
-      document.getElementById('mic-btn').className = 'btn btn-stop';
-      document.getElementById('mic-btn').textContent = '⏹ Couper le micro';
-      document.getElementById('vol-wrap').style.display = 'block';
-      document.getElementById('listeners-count').style.display = 'block';
-      generateQR(sessionId);
-      updateListenerCount();
-
-      // Analyser le niveau micro
-      const micPub = interpRoom.localParticipant.getTrackPublication(LK.Track.Source.Microphone);
-      if (micPub && micPub.track && micPub.track.mediaStream) {
-        setupAnalyser(micPub.track.mediaStream);
-      }
 
       interpRoom.on(LK.RoomEvent.ParticipantConnected, updateListenerCount);
       interpRoom.on(LK.RoomEvent.ParticipantDisconnected, updateListenerCount);
       interpRoom.on(LK.RoomEvent.Reconnecting, () => setInterpStatus('connecting', '⚠️ Reconnexion en cours...'));
-      interpRoom.on(LK.RoomEvent.Reconnected, () => { updateListenerCount(); });
+      interpRoom.on(LK.RoomEvent.Reconnected, () => { refreshLive(); updateListenerCount(); });
       interpRoom.on(LK.RoomEvent.ConnectionQualityChanged, (quality, participant) => {
         if (participant === interpRoom.localParticipant) showQuality(quality);
       });
+
+      await interpRoom.connect(details.serverUrl, details.participantToken);
+      await interpRoom.localParticipant.setMicrophoneEnabled(true);
+      isMicOn = true;
+
+      refreshLive();
+      document.getElementById('mic-btn').className = 'btn btn-stop';
+      document.getElementById('mic-btn').textContent = '⏹ Couper le micro';
+      document.getElementById('vol-wrap').style.display = 'block';
+      document.getElementById('listeners-count').style.display = 'block';
       document.getElementById('conn-quality').style.display = 'block';
-      interpRoom.on(LK.RoomEvent.Disconnected, () => {
-        if (isMicOn) resetInterpUI();
-      });
+      attachAnalyser();
+      generateQR(sessionId);
+      updateListenerCount();
     } catch(e) {
       console.error(e);
       setInterpStatus('off', 'Erreur : ' + (e.message || 'connexion impossible'));
@@ -210,14 +217,15 @@
     }
   }
 
+  function refreshLive() {
+    if (!isMicOn || !interpRoom) return;
+    setInterpStatus('live', '🔴 En direct — salle: ' + interpRoom.name);
+  }
+
   async function stopMic() {
     isMicOn = false;
     if (interpRoom) { await interpRoom.disconnect(); interpRoom = null; }
     if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
-    resetInterpUI();
-  }
-
-  function resetInterpUI() {
     setInterpStatus('off', 'Hors ligne');
     document.getElementById('mic-btn').className = 'btn btn-primary';
     document.getElementById('mic-btn').textContent = '🎙️ Démarrer le micro';
@@ -225,14 +233,7 @@
     document.getElementById('vol-fill').style.width = '0%';
     document.getElementById('qr-section').style.display = 'none';
     document.getElementById('listeners-count').style.display = 'none';
-  }
-
-  function updateListenerCount() {
-    if (!interpRoom) return;
-    const n = interpRoom.remoteParticipants.size;
-    document.getElementById('listeners-count').textContent = n + ' auditeur' + (n > 1 ? 's' : '') + ' connecté' + (n > 1 ? 's' : '');
-    if (n > 0) setInterpStatus('live', '🔴 En direct — ' + n + ' auditeur' + (n > 1 ? 's' : '') + ' — salle: ' + interpRoom.name);
-    else if (isMicOn) setInterpStatus('live', '🔴 En direct — salle: ' + interpRoom.name);
+    document.getElementById('conn-quality').style.display = 'none';
   }
 
   function setInterpStatus(state, text) {
@@ -250,37 +251,21 @@
     else el.textContent = '📶 Connexion : ' + quality;
   }
 
-  // Avertir avant de fermer la page si le micro est actif
-  window.addEventListener('beforeunload', (e) => {
-    if (isMicOn) { e.preventDefault(); e.returnValue = ''; }
-  });
-
-  // Réactiver le micro s'il a été coupé par le navigateur (ex: après annulation de fermeture)
-  async function ensureMicAlive() {
-    if (!isMicOn || !interpRoom) return;
-    const pub = interpRoom.localParticipant.getTrackPublication(LK.Track.Source.Microphone);
-    const track = pub && pub.track;
-    const dead = !track || track.isMuted || (track.mediaStreamTrack && track.mediaStreamTrack.readyState === 'ended');
-    if (dead) {
-      try {
-        await interpRoom.localParticipant.setMicrophoneEnabled(false);
-        await interpRoom.localParticipant.setMicrophoneEnabled(true);
-        setInterpStatus('live', '🔴 En direct — salle: ' + interpRoom.name);
-      } catch(e) {
-        setInterpStatus('off', 'Micro coupé — cliquez Couper puis Démarrer');
-      }
-    }
+  function updateListenerCount() {
+    if (!interpRoom) return;
+    const n = interpRoom.remoteParticipants.size;
+    document.getElementById('listeners-count').textContent = n + ' auditeur' + (n > 1 ? 's' : '') + ' connecté' + (n > 1 ? 's' : '');
   }
-  window.addEventListener('focus', ensureMicAlive);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') ensureMicAlive();
-  });
 
-  function setupAnalyser(stream) {
+  function attachAnalyser() {
+    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+    if (!interpRoom) return;
+    const pub = interpRoom.localParticipant.getTrackPublication(LK.Track.Source.Microphone);
+    if (!(pub && pub.track && pub.track.mediaStream)) return;
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 256;
-    ctx.createMediaStreamSource(stream).connect(analyser);
+    ctx.createMediaStreamSource(pub.track.mediaStream).connect(analyser);
     const data = new Uint8Array(analyser.frequencyBinCount);
     function tick() {
       analyser.getByteFrequencyData(data);
@@ -293,7 +278,7 @@
 
   function generateQR(sessionId) {
     const base = window.location.href.split('?')[0];
-    const url = base + '?session=' + encodeURIComponent(sessionId) + '&v=3';
+    const url = base + '?session=' + encodeURIComponent(sessionId) + '&v=' + APP_V;
     document.getElementById('listener-url').textContent = url;
     document.getElementById('qr-section').style.display = 'block';
     const container = document.getElementById('qr-container');
@@ -312,15 +297,15 @@
 
   async function startListening() {
     const sessionId = document.getElementById('session-code').value.trim() || 'AQM-2026';
-    setAudStatus('connecting', 'Connexion en cours...');
+    setAudStatus('connecting', B.connecting);
     document.getElementById('listen-btn').className = 'btn btn-stop';
-    document.getElementById('listen-btn').textContent = '⏹ Arrêter';
+    document.getElementById('listen-btn').textContent = B.stop;
 
     try {
       const details = await getConnectionDetails(sessionId, 'auditeur-' + Math.random().toString(36).substr(2,8));
       audRoom = new LK.Room();
 
-      audRoom.on(LK.RoomEvent.TrackSubscribed, (track, pub, participant) => {
+      audRoom.on(LK.RoomEvent.TrackSubscribed, (track) => {
         if (track.kind === LK.Track.Kind.Audio) {
           const el = document.getElementById('remote-audio');
           track.attach(el);
@@ -328,26 +313,21 @@
           tryPlay(el);
         }
       });
-
-      audRoom.on(LK.RoomEvent.Reconnecting, () => setAudStatus('connecting', '⚠️ Reconnexion...'));
-      audRoom.on(LK.RoomEvent.Reconnected, () => setAudStatus('listening', '🔵 Écoute en direct'));
-
+      audRoom.on(LK.RoomEvent.TrackUnsubscribed, () => {
+        if (isListening) setAudStatus('connecting', B.pause);
+      });
+      audRoom.on(LK.RoomEvent.Reconnecting, () => setAudStatus('connecting', B.reconnecting));
+      audRoom.on(LK.RoomEvent.Reconnected, () => setAudStatus('listening', B.listening));
       audRoom.on(LK.RoomEvent.Disconnected, () => {
         if (isListening) resetAudUI();
       });
 
       await audRoom.connect(details.serverUrl, details.participantToken);
       isListening = true;
-
-      // Vérifier si l'interprète est déjà en ligne
-      let interpFound = false;
-      audRoom.remoteParticipants.forEach(p => {
-        if (p.identity.startsWith('interprete')) interpFound = true;
-      });
-      if (!interpFound) setAudStatus('connecting', 'En attente — salle: ' + audRoom.name);
+      setAudStatus('connecting', B.connected);
     } catch(e) {
       console.error(e);
-      setAudStatus('off', 'Erreur : ' + (e.message || 'connexion impossible'));
+      setAudStatus('off', B.error + (e.message || '...'));
       resetAudUI(false);
     }
   }
@@ -356,12 +336,11 @@
     try {
       await audRoom.startAudio();
       await el.play();
-      setAudStatus('listening', '🔵 Écoute en direct');
+      setAudStatus('listening', B.listening);
       document.getElementById('tap-notice').style.display = 'none';
       requestWakeLock();
     } catch(e) {
-      pendingPlay = true;
-      setAudStatus('connecting', 'Toucher pour activer');
+      setAudStatus('connecting', B.tapShort);
       document.getElementById('tap-notice').style.display = 'block';
     }
   }
@@ -373,10 +352,10 @@
       const el = document.getElementById('remote-audio');
       try {
         await el.play();
-        setAudStatus('listening', '🔵 Écoute en direct');
+        setAudStatus('listening', B.listening);
         requestWakeLock();
       } catch(e) {
-        setAudStatus('off', 'Audio bloqué — rechargez la page');
+        setAudStatus('off', B.audioBlocked);
       }
     }
   }
@@ -388,13 +367,11 @@
     resetAudUI();
   }
 
-  function resetAudUI(resetListening = true) {
-    if (resetListening) {
-      setAudStatus('off', 'En attente');
-    }
+  function resetAudUI(resetStatus = true) {
+    if (resetStatus) setAudStatus('off', B.wait);
     document.getElementById('tap-notice').style.display = 'none';
     document.getElementById('listen-btn').className = 'btn btn-primary';
-    document.getElementById('listen-btn').textContent = '🎧 Écouter la traduction';
+    document.getElementById('listen-btn').textContent = B.listen;
   }
 
   function setAudStatus(state, text) {
@@ -425,7 +402,33 @@
     if (document.visibilityState === 'visible' && isListening) requestWakeLock();
   });
 
-  // ═══ MODE AUDITEUR UNIQUEMENT (via QR) ═══
+  // ═══ PROTECTIONS INTERPRÈTE ═══
+  window.addEventListener('beforeunload', (e) => {
+    if (isMicOn) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  async function ensureMicAlive() {
+    if (!isMicOn || !interpRoom) return;
+    const pub = interpRoom.localParticipant.getTrackPublication(LK.Track.Source.Microphone);
+    const track = pub && pub.track;
+    const dead = !track || track.isMuted || (track.mediaStreamTrack && track.mediaStreamTrack.readyState === 'ended');
+    if (dead) {
+      try {
+        await interpRoom.localParticipant.setMicrophoneEnabled(false);
+        await interpRoom.localParticipant.setMicrophoneEnabled(true);
+        refreshLive();
+        attachAnalyser();
+      } catch(e) {
+        setInterpStatus('off', 'Micro coupé — cliquez Couper puis Démarrer');
+      }
+    }
+  }
+  window.addEventListener('focus', ensureMicAlive);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') ensureMicAlive();
+  });
+
+  // ═══ MODE AUDITEUR (via QR) ═══
   const params = new URLSearchParams(window.location.search);
   if (params.get('session')) {
     document.getElementById('tabs-bar').style.display = 'none';

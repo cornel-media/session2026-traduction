@@ -82,6 +82,7 @@
       <div class="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
     </div>
     <div id="listeners-count" class="listeners-count" style="display:none;">0 auditeur connecté</div>
+    <div id="conn-quality" class="listeners-count" style="display:none;"></div>
     <div class="qr-section" id="qr-section" style="display:none;">
       <h3>📱 Code QR — Page auditeur</h3>
       <div id="qr-container"></div>
@@ -193,6 +194,12 @@
 
       interpRoom.on(LK.RoomEvent.ParticipantConnected, updateListenerCount);
       interpRoom.on(LK.RoomEvent.ParticipantDisconnected, updateListenerCount);
+      interpRoom.on(LK.RoomEvent.Reconnecting, () => setInterpStatus('connecting', '⚠️ Reconnexion en cours...'));
+      interpRoom.on(LK.RoomEvent.Reconnected, () => { updateListenerCount(); });
+      interpRoom.on(LK.RoomEvent.ConnectionQualityChanged, (quality, participant) => {
+        if (participant === interpRoom.localParticipant) showQuality(quality);
+      });
+      document.getElementById('conn-quality').style.display = 'block';
       interpRoom.on(LK.RoomEvent.Disconnected, () => {
         if (isMicOn) resetInterpUI();
       });
@@ -233,6 +240,20 @@
     document.getElementById('interp-dot').className = 'dot dot-' + state;
     document.getElementById('interp-status-text').textContent = text;
   }
+
+  function showQuality(quality) {
+    const el = document.getElementById('conn-quality');
+    const q = String(quality).toLowerCase();
+    if (q.includes('excellent')) el.textContent = '📶 Connexion : excellente';
+    else if (q.includes('good')) el.textContent = '📶 Connexion : bonne';
+    else if (q.includes('poor')) el.textContent = '⚠️ Connexion : faible — vérifiez le réseau';
+    else el.textContent = '📶 Connexion : ' + quality;
+  }
+
+  // Avertir avant de fermer la page si le micro est actif
+  window.addEventListener('beforeunload', (e) => {
+    if (isMicOn) { e.preventDefault(); e.returnValue = ''; }
+  });
 
   function setupAnalyser(stream) {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -286,6 +307,9 @@
           tryPlay(el);
         }
       });
+
+      audRoom.on(LK.RoomEvent.Reconnecting, () => setAudStatus('connecting', '⚠️ Reconnexion...'));
+      audRoom.on(LK.RoomEvent.Reconnected, () => setAudStatus('listening', '🔵 Écoute en direct'));
 
       audRoom.on(LK.RoomEvent.Disconnected, () => {
         if (isListening) resetAudUI();

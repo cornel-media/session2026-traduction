@@ -144,13 +144,13 @@
 
   // ═══ TOKEN ═══
   async function getConnectionDetails(roomName, identity) {
-    const resp = await fetch('https://' + SANDBOX_ID + '.sandbox.livekit.io/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomName: roomName, participantName: identity })
+    const tokenSource = LK.TokenSource.sandboxTokenServer(SANDBOX_ID);
+    const details = await tokenSource.fetch({
+      roomName: roomName,
+      participantName: identity,
+      participantIdentity: identity
     });
-    if (!resp.ok) throw new Error('Token server error: ' + resp.status);
-    return await resp.json(); // { serverUrl, participantToken, ... }
+    return details; // { serverUrl, participantToken }
   }
 
   // ═══ TABS ═══

@@ -177,7 +177,7 @@
       await interpRoom.localParticipant.setMicrophoneEnabled(true);
       isMicOn = true;
 
-      setInterpStatus('live', '🔴 En direct');
+      setInterpStatus('live', '🔴 En direct — salle: ' + interpRoom.name);
       document.getElementById('mic-btn').className = 'btn btn-stop';
       document.getElementById('mic-btn').textContent = '⏹ Couper le micro';
       document.getElementById('vol-wrap').style.display = 'block';
@@ -299,7 +299,7 @@
       audRoom.remoteParticipants.forEach(p => {
         if (p.identity.startsWith('interprete')) interpFound = true;
       });
-      if (!interpFound) setAudStatus('connecting', 'En attente de l\'interprète...');
+      if (!interpFound) setAudStatus('connecting', 'En attente — salle: ' + audRoom.name);
     } catch(e) {
       console.error(e);
       setAudStatus('off', 'Erreur : ' + (e.message || 'connexion impossible'));

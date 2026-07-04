@@ -251,7 +251,7 @@
 
   function generateQR(sessionId) {
     const base = window.location.href.split('?')[0];
-    const url = base + '?session=' + encodeURIComponent(sessionId);
+    const url = base + '?session=' + encodeURIComponent(sessionId) + '&v=3';
     document.getElementById('listener-url').textContent = url;
     document.getElementById('qr-section').style.display = 'block';
     const container = document.getElementById('qr-container');

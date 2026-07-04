@@ -255,6 +255,27 @@
     if (isMicOn) { e.preventDefault(); e.returnValue = ''; }
   });
 
+  // Réactiver le micro s'il a été coupé par le navigateur (ex: après annulation de fermeture)
+  async function ensureMicAlive() {
+    if (!isMicOn || !interpRoom) return;
+    const pub = interpRoom.localParticipant.getTrackPublication(LK.Track.Source.Microphone);
+    const track = pub && pub.track;
+    const dead = !track || track.isMuted || (track.mediaStreamTrack && track.mediaStreamTrack.readyState === 'ended');
+    if (dead) {
+      try {
+        await interpRoom.localParticipant.setMicrophoneEnabled(false);
+        await interpRoom.localParticipant.setMicrophoneEnabled(true);
+        setInterpStatus('live', '🔴 En direct — salle: ' + interpRoom.name);
+      } catch(e) {
+        setInterpStatus('off', 'Micro coupé — cliquez Couper puis Démarrer');
+      }
+    }
+  }
+  window.addEventListener('focus', ensureMicAlive);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') ensureMicAlive();
+  });
+
   function setupAnalyser(stream) {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = ctx.createAnalyser();

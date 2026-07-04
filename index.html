@@ -224,8 +224,8 @@
     if (!interpRoom) return;
     const n = interpRoom.remoteParticipants.size;
     document.getElementById('listeners-count').textContent = n + ' auditeur' + (n > 1 ? 's' : '') + ' connecté' + (n > 1 ? 's' : '');
-    if (n > 0) setInterpStatus('live', '🔴 En direct — ' + n + ' auditeur' + (n > 1 ? 's' : ''));
-    else if (isMicOn) setInterpStatus('live', '🔴 En direct');
+    if (n > 0) setInterpStatus('live', '🔴 En direct — ' + n + ' auditeur' + (n > 1 ? 's' : '') + ' — salle: ' + interpRoom.name);
+    else if (isMicOn) setInterpStatus('live', '🔴 En direct — salle: ' + interpRoom.name);
   }
 
   function setInterpStatus(state, text) {

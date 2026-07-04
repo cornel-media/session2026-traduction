@@ -173,7 +173,7 @@
     setInterpStatus('connecting', 'Connexion à LiveKit...');
     try {
       const details = await getConnectionDetails(sessionId, 'interprete-' + Math.random().toString(36).substr(2,6));
-      interpRoom = new LK.Room();
+      interpRoom = new LK.Room({ disconnectOnPageLeave: false });
       await interpRoom.connect(details.serverUrl, details.participantToken);
       await interpRoom.localParticipant.setMicrophoneEnabled(true);
       isMicOn = true;

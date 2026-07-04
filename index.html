@@ -144,10 +144,10 @@
 
   // ═══ TOKEN ═══
   async function getConnectionDetails(roomName, identity) {
-    const url = TOKEN_ENDPOINT + '?roomName=' + encodeURIComponent(roomName) + '&participantName=' + encodeURIComponent(identity);
-    const resp = await fetch(url, {
+    const resp = await fetch('https://' + SANDBOX_ID + '.sandbox.livekit.io/', {
       method: 'POST',
-      headers: { 'X-Sandbox-ID': SANDBOX_ID }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomName: roomName, participantName: identity })
     });
     if (!resp.ok) throw new Error('Token server error: ' + resp.status);
     return await resp.json(); // { serverUrl, participantToken, ... }

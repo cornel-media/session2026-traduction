@@ -405,7 +405,7 @@
     </div>
 
 
-    <div class="brand-sub" id="event-label">Interprétation en direct</div>
+    <div class="brand-sub" data-i18n="brandSubtitle">Interprétation en direct</div>
     <div class="language-switch" role="group" aria-label="Language / Langue"><button type="button" data-lang="fr" class="lang-choice active" onclick="setLanguage('fr')" aria-pressed="true">FR</button><button type="button" data-lang="en" class="lang-choice" onclick="setLanguage('en')" aria-pressed="false">EN</button></div>
   </div>
 
@@ -424,11 +424,6 @@
       </div>
 
       <div class="section-title">01 <span data-i18n="broadcastSection">Votre diffusion</span></div>
-      <div class="field">
-        <label for="event-name" data-i18n="eventName">Nom de l'événement</label>
-        <input type="text" id="event-name" value="Interprétation en direct" oninput="document.getElementById('event-label').textContent=this.value">
-      </div>
-
       <div class="field">
         <label for="session-id" data-i18n="sessionCode">Code de session</label>
         <input type="text" id="session-id" value="SDAQC" placeholder="Ex : SDAQC, biserica-X" data-i18n-placeholder="sessionPlaceholder" autocapitalize="none" autocomplete="off" spellcheck="false">
@@ -516,7 +511,7 @@
     fr: {
       tabInterpreter:'🎙️ Interprète', tabListener:'🎧 Auditeur', interpreterSpace:'ESPACE INTERPRÈTE',
       interpreterTitle:'Votre voix, en direct.', interpreterIntro:'Préparez votre canal et partagez-le avec les participants.',
-      broadcastSection:'Votre diffusion', eventName:'Nom de l’événement', eventDefault:'Interprétation en direct',
+      broadcastSection:'Votre diffusion', brandSubtitle:'Interprétation en direct',
       sessionCode:'Code de session', sessionPlaceholder:'Ex : SDAQC, église-X', interpreterPassword:'Mot de passe interprète', passwordPlaceholder:'Requis pour diffuser',
       equipmentSection:'Votre équipement', microphone:'Microphone', defaultMicrophone:'Microphone par défaut du système',
       micHint:'Autorisez le micro une première fois pour voir la liste des appareils.', micLevel:'Niveau du micro',
@@ -539,7 +534,7 @@
     en: {
       tabInterpreter:'🎙️ Interpreter', tabListener:'🎧 Listener', interpreterSpace:'INTERPRETER SPACE',
       interpreterTitle:'Your voice, live.', interpreterIntro:'Set up your channel and share it with participants.',
-      broadcastSection:'Your broadcast', eventName:'Event name', eventDefault:'Live interpretation',
+      broadcastSection:'Your broadcast', brandSubtitle:'Live interpretation',
       sessionCode:'Session code', sessionPlaceholder:'E.g. SDAQC, church-X', interpreterPassword:'Interpreter password', passwordPlaceholder:'Required to broadcast',
       equipmentSection:'Your equipment', microphone:'Microphone', defaultMicrophone:'System default microphone',
       micHint:'Allow microphone access once to see the available devices.', micLevel:'Microphone level',
@@ -569,9 +564,6 @@
   }
   function setLanguage(lang) {
     if (!T[lang]) return;
-    const eventInput = document.getElementById('event-name');
-    const priorDefault = T[currentLanguage].eventDefault;
-    const hasDefaultEvent = eventInput.value === priorDefault;
     currentLanguage = lang;
     document.documentElement.lang = lang;
     document.title = t('pageTitle');
@@ -584,10 +576,6 @@
       el.classList.toggle('active', active);
       el.setAttribute('aria-pressed', String(active));
     });
-    if (hasDefaultEvent) {
-      eventInput.value = t('eventDefault');
-      document.getElementById('event-label').textContent = eventInput.value;
-    }
     document.getElementById('mic-select').options[0].textContent = t('defaultMicrophone');
     document.getElementById('mic-btn').textContent = t(isMicOn ? 'micStop' : 'micStart');
     document.getElementById('listen-btn').textContent = t(document.getElementById('listen-btn').classList.contains('btn-stop') ? 'stop' : 'listen');

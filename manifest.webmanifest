@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "TransLive",
+  "short_name": "TransLive",
+  "description": "Interprétation en direct · Live interpretation",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F7F3EC",
+  "theme_color": "#2F557F",
+  "icons": [
+    { "src": "/brand/translive-app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/brand/translive-app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

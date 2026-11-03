@@ -375,7 +375,7 @@
 
       <div class="field">
         <label for="session-id">Code de session</label>
-        <input type="text" id="session-id" value="demo" placeholder="Ex : aqm-montreal-ro" autocapitalize="none" autocomplete="off" spellcheck="false">
+        <input type="text" id="session-id" value="SDAQC" placeholder="Ex : SDAQC, biserica-X" autocapitalize="none" autocomplete="off" spellcheck="false">
       </div>
 
       <div class="field">
@@ -418,7 +418,7 @@
 
       <div class="field">
         <label for="session-code">Code de session / Session code</label>
-        <input type="text" id="session-code" value="demo" autocapitalize="none" autocomplete="off" spellcheck="false">
+        <input type="text" id="session-code" value="SDAQC" autocapitalize="none" autocomplete="off" spellcheck="false">
       </div>
 
       <button class="btn btn-primary" id="listen-btn" onclick="toggleListen()">🎧 Écouter / Listen</button>
@@ -503,7 +503,7 @@
   }
 
   async function startMic() {
-    const sessionId = document.getElementById('session-id').value.trim() || 'demo';
+    const sessionId = document.getElementById('session-id').value.trim() || 'SDAQC';
     const password = document.getElementById('interp-password').value.trim();
     if (!password) {
       alert('Veuillez saisir le mot de passe interprète.');
@@ -625,7 +625,7 @@
   }
 
   async function startListening() {
-    const sessionId = document.getElementById('session-code').value.trim() || 'demo';
+    const sessionId = document.getElementById('session-code').value.trim() || 'SDAQC';
     setAudStatus('connecting', B.connecting);
     document.getElementById('listen-btn').className = 'btn btn-stop';
     document.getElementById('listen-btn').textContent = B.stop;

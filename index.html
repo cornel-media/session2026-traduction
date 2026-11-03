@@ -76,6 +76,13 @@
         <option value="en-fr">Anglais → Français</option>
       </select>
     </div>
+    <div class="field">
+      <label>Microphone</label>
+      <select id="mic-select">
+        <option value="">Microphone par défaut du système</option>
+      </select>
+      <p id="mic-hint" style="font-size:11px;color:#9ca3af;margin-top:4px;">Autorisez le micro une première fois pour voir la liste des appareils.</p>
+    </div>
     <button class="btn btn-primary" id="mic-btn" onclick="toggleMic()">🎙️ Démarrer le micro</button>
     <div class="vol-wrap" id="vol-wrap" style="display:none;">
       <div class="vol-label">Niveau du micro</div>
@@ -198,8 +205,12 @@
       });
 
       await interpRoom.connect(details.serverUrl, details.participantToken);
-      await interpRoom.localParticipant.setMicrophoneEnabled(true);
+      const micSel = document.getElementById('mic-select');
+      const chosenMic = micSel && micSel.value ? micSel.value : undefined;
+      const micOpts = chosenMic ? { deviceId: chosenMic } : undefined;
+      await interpRoom.localParticipant.setMicrophoneEnabled(true, micOpts);
       isMicOn = true;
+      populateMicList();
 
       refreshLive();
       document.getElementById('mic-btn').className = 'btn btn-stop';
@@ -427,6 +438,55 @@
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') ensureMicAlive();
   });
+
+  // ═══ SÉLECTION DU MICROPHONE ═══
+  async function populateMicList() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const mics = devices.filter(d => d.kind === 'audioinput');
+      const sel = document.getElementById('mic-select');
+      const hint = document.getElementById('mic-hint');
+      if (!sel) return;
+      const current = sel.value;
+      // Si les labels sont vides, la permission n'a pas encore été accordée
+      const labelsAvailable = mics.some(m => m.label && m.label.length > 0);
+      sel.innerHTML = '<option value="">Microphone par défaut du système</option>';
+      mics.forEach((m, i) => {
+        const opt = document.createElement('option');
+        opt.value = m.deviceId;
+        opt.textContent = m.label || ('Microphone ' + (i + 1));
+        sel.appendChild(opt);
+      });
+      if (current) sel.value = current;
+      if (hint) hint.style.display = labelsAvailable ? 'none' : 'block';
+    } catch(e) {
+      console.error('enumerateDevices failed:', e);
+    }
+  }
+
+  // Changement de micro en direct (si le micro est déjà en marche)
+  document.getElementById('mic-select').addEventListener('change', async (e) => {
+    if (!isMicOn || !interpRoom) return;
+    const deviceId = e.target.value;
+    try {
+      if (deviceId) {
+        await interpRoom.switchActiveDevice('audioinput', deviceId);
+      } else {
+        await interpRoom.switchActiveDevice('audioinput', 'default');
+      }
+      // Réattacher l'analyseur sur le nouveau flux
+      setTimeout(attachAnalyser, 300);
+    } catch(err) {
+      console.error('switch mic failed:', err);
+      alert('Impossible de changer de micro : ' + (err.message || err));
+    }
+  });
+
+  // Peupler la liste au chargement et quand les appareils changent
+  populateMicList();
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener('devicechange', populateMicList);
+  }
 
   // ═══ MODE AUDITEUR (via QR) ═══
   const params = new URLSearchParams(window.location.search);

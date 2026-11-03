@@ -83,6 +83,10 @@
       </select>
       <p id="mic-hint" style="font-size:11px;color:#9ca3af;margin-top:4px;">Autorisez le micro une première fois pour voir la liste des appareils.</p>
     </div>
+    <div class="field">
+      <label>Mot de passe interprète</label>
+      <input type="password" id="interp-password" placeholder="Requis pour diffuser" autocomplete="current-password">
+    </div>
     <button class="btn btn-primary" id="mic-btn" onclick="toggleMic()">🎙️ Démarrer le micro</button>
     <div class="vol-wrap" id="vol-wrap" style="display:none;">
       <div class="vol-label">Niveau du micro</div>
@@ -141,8 +145,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
   // ═══ CONFIGURATION LIVEKIT ═══
-  const SANDBOX_ID = 'session2026traduction-21f7gk';
-  const APP_V = '3';
+  const API_BASE = 'https://translive-api.cornelazs.workers.dev';
+  const APP_V = '4';
   const LK = LivekitClient;
 
   let interpRoom = null, audRoom = null;
@@ -166,13 +170,19 @@
   };
 
   // ═══ TOKEN ═══
-  async function getConnectionDetails(roomName, identity) {
-    const tokenSource = LK.TokenSource.sandboxTokenServer(SANDBOX_ID);
-    return await tokenSource.fetch({
-      roomName: roomName,
-      participantName: identity,
-      participantIdentity: identity
-    });
+  async function getListenerDetails(roomName, identity) {
+    const url = `${API_BASE}/listen?room=${encodeURIComponent(roomName)}&name=${encodeURIComponent(identity)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Erreur serveur: ' + res.status);
+    return await res.json();
+  }
+
+  async function getBroadcastDetails(roomName, identity, password) {
+    const url = `${API_BASE}/broadcast?room=${encodeURIComponent(roomName)}&name=${encodeURIComponent(identity)}&password=${encodeURIComponent(password)}`;
+    const res = await fetch(url);
+    if (res.status === 401) throw new Error('Mot de passe incorrect');
+    if (!res.ok) throw new Error('Erreur serveur: ' + res.status);
+    return await res.json();
   }
 
   // ═══ TABS ═══
@@ -191,9 +201,14 @@
 
   async function startMic() {
     const sessionId = document.getElementById('session-id').value.trim() || 'demo';
+    const password = document.getElementById('interp-password').value.trim();
+    if (!password) {
+      alert('Veuillez saisir le mot de passe interprète.');
+      return;
+    }
     setInterpStatus('connecting', 'Connexion à LiveKit...');
     try {
-      const details = await getConnectionDetails(sessionId, 'interprete-' + Math.random().toString(36).substr(2,6));
+      const details = await getBroadcastDetails(sessionId, 'interprete-' + Math.random().toString(36).substr(2,6), password);
       interpRoom = new LK.Room({ disconnectOnPageLeave: false });
 
       interpRoom.on(LK.RoomEvent.ParticipantConnected, updateListenerCount);
@@ -313,7 +328,7 @@
     document.getElementById('listen-btn').textContent = B.stop;
 
     try {
-      const details = await getConnectionDetails(sessionId, 'auditeur-' + Math.random().toString(36).substr(2,8));
+      const details = await getListenerDetails(sessionId, 'auditeur-' + Math.random().toString(36).substr(2,8));
       audRoom = new LK.Room();
 
       audRoom.on(LK.RoomEvent.TrackSubscribed, (track) => {

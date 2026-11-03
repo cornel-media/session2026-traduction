@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>TransLive — Interprétation en direct</title>
+<link rel="icon" type="image/svg+xml" href="brand/translive-icon.svg">
 <meta name="description" content="Plateforme libre d'interprétation en direct pour églises, conférences et événements.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,15 +13,19 @@
 <style>
   :root {
     --brand: #2F557F;
-    --brand-dark: #1e3a5f;
-    --parchment: #efe9d8;
-    --parchment-deep: #e4dcc2;
+    --brand-dark: #18344E;
+    --accent: #F47A20;
+    --accent-dark: #B94F0B;
+    --accent-soft: #FFF0E3;
+    --sky-soft: #EAF1F7;
+    --parchment: #F7F3EC;
+    --parchment-deep: #E8DED0;
     --card: #ffffff;
-    --ink: #1a2234;
-    --ink-soft: #5a657a;
-    --ink-faint: #94a0b3;
-    --rule: #e4e1d6;
-    --rule-card: #e8ecf1;
+    --ink: #18344E;
+    --ink-soft: #53657A;
+    --ink-faint: #718095;
+    --rule: #E8DED0;
+    --rule-card: #DDE5EC;
     --live: #166534;
     --live-bg: #dcfce7;
     --live-dot: #22c55e;
@@ -57,22 +62,6 @@
 
   .brand {
     padding: 8px 6px 22px;
-  }
-
-  .wordmark {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 500;
-    font-size: 32px;
-    letter-spacing: -0.015em;
-    color: var(--ink);
-    font-variation-settings: "opsz" 72;
-    line-height: 1.1;
-  }
-
-  .wordmark .mark-live {
-    color: var(--brand);
-    font-style: italic;
-    font-weight: 600;
   }
 
   .brand-sub {
@@ -341,6 +330,65 @@
   body.listener-only .tabs { display: none; }
   body.listener-only .brand { padding-bottom: 18px; }
 
+  /* Editorial surface and clearer role hierarchy */
+  .language-switch { display: inline-flex; gap: 3px; margin-top: 14px; padding: 3px; background: #EAF1F7; border-radius: 9px; }
+  .lang-choice { border: 0; background: transparent; color: var(--ink-soft); border-radius: 6px; min-width: 42px; min-height: 32px; font: 700 12px 'Inter', sans-serif; cursor: pointer; }
+  .lang-choice.active { background: #fff; color: var(--brand); box-shadow: 0 1px 4px rgba(47,85,127,.16); }
+  .lang-choice:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .brand-identity { display: flex; align-items: center; gap: 14px; }
+  .brand-icon { width: 76px; height: 76px; flex: 0 0 76px; display: block; }
+  .brand-name { font-family: "Avenir Next", "Inter", Arial, sans-serif; font-size: clamp(35px, 8vw, 45px); font-weight: 700; letter-spacing: -.06em; line-height: 1; color: #18344E; white-space: nowrap; }
+  .brand-name span { color: #B94F0B; }
+  body.listener-only .brand-identity { justify-content: center; }
+  body { background: radial-gradient(circle at 82% 0, #FFF0E3 0, transparent 32%), radial-gradient(circle at 8% 78%, #EAF1F7 0, transparent 38%), var(--parchment); padding-top: clamp(24px, 6vh, 62px); }
+  .shell { max-width: 500px; }
+  .brand { padding: 0 8px 26px; }
+  .brand::after { content: ''; display: block; width: 45px; height: 3px; border-radius: 3px; background: var(--accent); margin-top: 18px; }
+  .brand-sub { font-size: 14px; margin-top: 8px; }
+  .card { border-radius: 20px; border-color: rgba(47,85,127,.12); box-shadow: 0 18px 55px -30px rgba(22,42,69,.35), 0 2px 5px rgba(22,42,69,.04); }
+  .tabs { margin: 16px 16px 0; padding: 5px; background: var(--sky-soft); }
+  .tab { min-height: 44px; font-weight: 600; }
+  .tab.active { color: var(--brand); box-shadow: 0 2px 7px rgba(47,85,127,.12); }
+  .tab:focus-visible, .btn:focus-visible, .tap-notice:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .panel { padding: 30px 30px 32px; }
+  .panel-heading { margin-bottom: 25px; }
+  .panel-kicker { color: var(--accent-dark); font-size: 10px; letter-spacing: .16em; font-weight: 600; margin-bottom: 8px; }
+  .panel-heading h1 { font: 500 28px/1.18 'Fraunces', Georgia, serif; letter-spacing: -.025em; margin-bottom: 8px; }
+  .panel-heading h1 em { color: var(--accent-dark); font-weight: 500; }
+  .panel-heading p { color: var(--ink-soft); font-size: 13px; line-height: 1.55; }
+  .listener-heading { text-align: center; margin: 4px 0 28px; }
+  .listener-heading h1 { font-size: 31px; }
+  .status-bar { border: 1px solid transparent; font-size: 13px; min-height: 49px; }
+  .status-off { border-color: #e4e7eb; }
+  .status-live { border-color: #a7e3b6; }
+  .status-connecting { border-color: #f4d48a; }
+  .status-listening { border-color: #a8c6f8; }
+  .section-title { display: flex; gap: 10px; align-items: center; color: var(--accent-dark); font-size: 11px; font-weight: 600; letter-spacing: .1em; margin: 25px 0 14px; }
+  .section-title span { color: var(--ink-soft); letter-spacing: .02em; text-transform: uppercase; }
+  .field { margin-bottom: 16px; }
+  label { color: #43516a; font-weight: 600; }
+  input, select { min-height: 46px; border-color: #D6E0E8; background: #FCFDFE; }
+  input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(47,85,127,.16); }
+  .btn { min-height: 52px; border-radius: 11px; }
+  .btn-primary { background: var(--brand); box-shadow: 0 7px 18px -10px rgba(47,85,127,.6); }
+  .btn-primary:hover { background: var(--brand-dark); }
+  #tab-auditeur .btn-primary { background: var(--accent); color: #18344E; box-shadow: 0 7px 18px -10px rgba(185,79,11,.55); }
+  #tab-auditeur .btn-primary:hover { background: #E96D16; }
+  #tab-auditeur .field input[type=range] { accent-color: var(--accent-dark); }
+  #tab-auditeur .status-off { background: var(--sky-soft); color: var(--brand-dark); }
+  .tap-notice { background: var(--accent-soft); border-color: #F8C297; color: var(--accent-dark); }
+  .vol-fill { background: var(--accent); }
+  .url-display { background: var(--sky-soft); color: var(--brand-dark); }
+  #qr-container { border-color: #D6E0E8; box-shadow: 0 0 0 6px var(--sky-soft); }
+  .btn-stop { background: #a52c2c; }
+  .qr-section { margin-top: 8px; }
+  .qr-heading { font-size: 20px; }
+  .foot { padding-top: 20px; }
+  body.listener-only .brand { text-align: center; padding-bottom: 25px; }
+  body.listener-only .brand::after { margin-inline: auto; }
+  body.listener-only .panel { padding-top: 34px; }
+  @media (max-width: 420px) { body { padding: 20px 12px 32px; } .panel { padding: 24px 20px 26px; } .listener-heading h1 { font-size: 27px; } .brand-icon { width: 64px; height: 64px; flex-basis: 64px; } .brand-identity { gap: 10px; } }
+
   @media (prefers-reduced-motion: reduce) {
     .dot-live, .dot-connecting, .dot-listening { animation: none; }
     * { transition: none !important; }
@@ -351,50 +399,59 @@
 <div class="shell">
 
   <div class="brand">
-    <div class="wordmark">Trans<span class="mark-live">Live</span></div>
+    <div class="brand-identity">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" class="brand-icon" role="img" aria-label="TransLive"><rect width="128" height="128" rx="30" fill="#2F557F"/><path d="M27 34h43a15 15 0 0 1 15 15v24a15 15 0 0 1-15 15H43L29 99V85a15 15 0 0 1-2-12V49a15 15 0 0 1 15-15Z" fill="#FFFFFF"/><path d="M64 43h25a15 15 0 0 1 15 15v22a15 15 0 0 1-15 15h-2l11 10V91a15 15 0 0 1-9 4H64a15 15 0 0 1-15-15V58a15 15 0 0 1 15-15Z" fill="#F47A20"/><path d="M45 66h8l6-12 8 23 7-15 4 7h7" fill="none" stroke="#2F557F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="brand-name">Trans<span>Live</span></div>
+    </div>
+
+
     <div class="brand-sub" id="event-label">Interprétation en direct</div>
+    <div class="language-switch" role="group" aria-label="Language / Langue"><button type="button" data-lang="fr" class="lang-choice active" onclick="setLanguage('fr')" aria-pressed="true">FR</button><button type="button" data-lang="en" class="lang-choice" onclick="setLanguage('en')" aria-pressed="false">EN</button></div>
   </div>
 
   <div class="card">
     <div class="tabs" id="tabs-bar">
-      <button class="tab active" onclick="showTab('interprete')">🎙️ Interprète</button>
-      <button class="tab" onclick="showTab('auditeur')">🎧 Auditeur</button>
+      <button class="tab active" onclick="showTab('interprete')" data-i18n="tabInterpreter">🎙️ Interprète</button>
+      <button class="tab" onclick="showTab('auditeur')" data-i18n="tabListener">🎧 Auditeur</button>
     </div>
 
     <!-- INTERPRÈTE -->
     <div id="tab-interprete" class="panel active">
+      <div class="panel-heading"><div class="panel-kicker" data-i18n="interpreterSpace">ESPACE INTERPRÈTE</div><h1 data-i18n="interpreterTitle">Votre voix, en direct.</h1><p data-i18n="interpreterIntro">Préparez votre canal et partagez-le avec les participants.</p></div>
       <div id="interp-status" class="status-bar status-off">
         <span class="dot dot-off" id="interp-dot"></span>
         <span id="interp-status-text">Hors ligne</span>
       </div>
 
+      <div class="section-title">01 <span data-i18n="broadcastSection">Votre diffusion</span></div>
       <div class="field">
-        <label for="event-name">Nom de l'événement</label>
+        <label for="event-name" data-i18n="eventName">Nom de l'événement</label>
         <input type="text" id="event-name" value="Interprétation en direct" oninput="document.getElementById('event-label').textContent=this.value">
       </div>
 
       <div class="field">
-        <label for="session-id">Code de session</label>
-        <input type="text" id="session-id" value="SDAQC" placeholder="Ex : SDAQC, biserica-X" autocapitalize="none" autocomplete="off" spellcheck="false">
+        <label for="session-id" data-i18n="sessionCode">Code de session</label>
+        <input type="text" id="session-id" value="SDAQC" placeholder="Ex : SDAQC, biserica-X" data-i18n-placeholder="sessionPlaceholder" autocapitalize="none" autocomplete="off" spellcheck="false">
       </div>
 
       <div class="field">
-        <label for="interp-password">Mot de passe interprète</label>
-        <input type="password" id="interp-password" placeholder="Requis pour diffuser" autocomplete="current-password">
+        <label for="interp-password" data-i18n="interpreterPassword">Mot de passe interprète</label>
+        <input type="password" id="interp-password" placeholder="Requis pour diffuser" data-i18n-placeholder="passwordPlaceholder" autocomplete="current-password">
       </div>
 
+      <div class="section-title">02 <span data-i18n="equipmentSection">Votre équipement</span></div>
       <div class="field">
-        <label for="mic-select">Microphone</label>
+        <label for="mic-select" data-i18n="microphone">Microphone</label>
         <select id="mic-select">
-          <option value="">Microphone par défaut du système</option>
+          <option value="" data-i18n="defaultMicrophone">Microphone par défaut du système</option>
         </select>
-        <p id="mic-hint" class="mic-hint">Autorisez le micro une première fois pour voir la liste des appareils.</p>
+        <p id="mic-hint" class="mic-hint" data-i18n="micHint">Autorisez le micro une première fois pour voir la liste des appareils.</p>
       </div>
 
       <button class="btn btn-primary" id="mic-btn" onclick="toggleMic()">🎙️ Démarrer le micro</button>
 
       <div class="vol-wrap" id="vol-wrap" style="display:none;">
-        <div class="vol-label">Niveau du micro</div>
+        <div class="vol-label" data-i18n="micLevel">Niveau du micro</div>
         <div class="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
       </div>
       <div id="listeners-count" class="listeners-count" style="display:none;">0 auditeur connecté</div>
@@ -402,42 +459,41 @@
 
       <div class="qr-section" id="qr-section" style="display:none;">
         <div class="divider"></div>
-        <h3 class="qr-heading">Scanner pour écouter</h3>
+        <h3 class="qr-heading" data-i18n="scanToListen">Scanner pour écouter</h3>
         <div id="qr-container"></div>
         <div class="url-display" id="listener-url"></div>
-        <p class="note">Affichez ce QR sur grand écran — les participants scannent avec leur téléphone.</p>
+        <p class="note" data-i18n="qrNote">Affichez ce QR sur grand écran — les participants scannent avec leur téléphone.</p>
       </div>
     </div>
 
     <!-- AUDITEUR -->
     <div id="tab-auditeur" class="panel">
+      <div class="panel-heading listener-heading"><div class="panel-kicker" data-i18n="listenerSpace">ESPACE AUDITEUR</div><h1 data-i18n="listenerTitle">Écoutez en direct.</h1><p data-i18n="listenerIntro">Une voix pour suivre l’événement, où que vous soyez.</p></div>
       <div id="aud-status" class="status-bar status-off">
         <span class="dot dot-off" id="aud-dot"></span>
         <span id="aud-status-text">En attente / Waiting</span>
       </div>
 
       <div class="field">
-        <label for="session-code">Code de session / Session code</label>
+        <label for="session-code" data-i18n="sessionCode">Code de session</label>
         <input type="text" id="session-code" value="SDAQC" autocapitalize="none" autocomplete="off" spellcheck="false">
       </div>
 
       <button class="btn btn-primary" id="listen-btn" onclick="toggleListen()">🎧 Écouter / Listen</button>
 
-      <div class="tap-notice" id="tap-notice" onclick="unlockAudio()">
-        👆 Toucher ici pour activer l'audio<br>Tap here to enable audio
-      </div>
+      <div class="tap-notice" id="tap-notice" onclick="unlockAudio()" data-i18n="tapNotice">👆 Toucher ici pour activer l'audio</div>
 
       <div class="field" style="margin-top:14px;">
-        <label for="vol-slider">Volume</label>
+        <label for="vol-slider" data-i18n="volume">Volume</label>
         <input type="range" min="0" max="100" value="90" id="vol-slider" oninput="setAudVolume(this.value)">
       </div>
 
-      <p class="note">Restez connecté pendant les silences — l'audio reprend automatiquement.<br>Stay connected during silences — audio resumes automatically.</p>
+      <p class="note" data-i18n="listenerNote">Restez connecté pendant les silences — l'audio reprend automatiquement.</p>
     </div>
   </div>
 
   <div class="foot">
-    TransLive · LiveKit Cloud · <a href="https://github.com/cornel-media/session2026-traduction" target="_blank" rel="noopener">Code source</a>
+    TransLive · LiveKit Cloud · <a href="https://github.com/cornel-media/session2026-traduction" target="_blank" rel="noopener" data-i18n="sourceCode">Code source</a>
   </div>
 
 </div>
@@ -455,35 +511,104 @@
   let isMicOn = false, isListening = false;
   let animFrame = null, wakeLock = null;
 
-  // ═══ TEXTES BILINGUES AUDITEUR ═══
-  const B = {
-    wait: 'En attente / Waiting',
-    connecting: 'Connexion... / Connecting...',
-    connected: 'Connecté — en attente de l\'audio / Waiting for audio',
-    listening: '🔵 Écoute en direct / Listening live',
-    pause: 'Canal en pause — restez connecté / Paused — stay connected',
-    reconnecting: '⚠️ Reconnexion... / Reconnecting...',
-    listen: '🎧 Écouter / Listen',
-    stop: '⏹ Arrêter / Stop',
-    tapShort: 'Toucher pour activer / Tap to enable',
-    audioBlocked: 'Audio bloqué — rechargez / blocked — reload',
-    offline: 'Interprète hors ligne / Interpreter offline',
-    error: 'Erreur / Error: '
+  // ═══ INTERFACE FR / EN ═══
+  const T = {
+    fr: {
+      tabInterpreter:'🎙️ Interprète', tabListener:'🎧 Auditeur', interpreterSpace:'ESPACE INTERPRÈTE',
+      interpreterTitle:'Votre voix, en direct.', interpreterIntro:'Préparez votre canal et partagez-le avec les participants.',
+      broadcastSection:'Votre diffusion', eventName:'Nom de l’événement', eventDefault:'Interprétation en direct',
+      sessionCode:'Code de session', sessionPlaceholder:'Ex : SDAQC, église-X', interpreterPassword:'Mot de passe interprète', passwordPlaceholder:'Requis pour diffuser',
+      equipmentSection:'Votre équipement', microphone:'Microphone', defaultMicrophone:'Microphone par défaut du système',
+      micHint:'Autorisez le micro une première fois pour voir la liste des appareils.', micLevel:'Niveau du micro',
+      scanToListen:'Scanner pour écouter', qrNote:'Affichez ce QR sur grand écran — les participants scannent avec leur téléphone.',
+      listenerSpace:'ESPACE AUDITEUR', listenerTitle:'Écoutez en direct.', listenerIntro:'Une voix pour suivre l’événement, où que vous soyez.',
+      volume:'Volume', tapNotice:'👆 Toucher ici pour activer l’audio',
+      listenerNote:'Restez connecté pendant les silences — l’audio reprend automatiquement.', sourceCode:'Code source',
+      wait:'En attente', connecting:'Connexion…', connected:'Connecté — en attente de l’audio', listening:'Écoute en direct',
+      pause:'Canal en pause — restez connecté', reconnecting:'Reconnexion…', listen:'🎧 Écouter', stop:'⏹ Arrêter',
+      tapShort:'Toucher pour activer', audioBlocked:'Audio bloqué — rechargez la page', offline:'Interprète hors ligne',
+      error:'Erreur : {detail}', serverError:'Erreur serveur : ', badPassword:'Mot de passe incorrect', passwordRequired:'Veuillez saisir le mot de passe interprète.',
+      interpOffline:'Hors ligne', interpConnecting:'Connexion à LiveKit…', interpReconnecting:'Reconnexion en cours…',
+      interpLive:'En direct — salle : {room}', micStart:'🎙️ Démarrer le micro', micStop:'⏹ Couper le micro',
+      micDenied:'Accès au microphone refusé.', connectionImpossible:'Connexion impossible — réessayez.', listenerConnectionError:'Connexion impossible — vérifiez le code de session et réessayez.',
+      qualityExcellent:'Connexion : excellente', qualityGood:'Connexion : bonne', qualityPoor:'Connexion : faible — vérifiez le réseau',
+      qualityOther:'Connexion : {quality}', listenerCount:'{n} auditeur{plural} connecté{plural}',
+      micInterrupted:'Micro coupé — cliquez Couper puis Démarrer', micSwitchError:'Impossible de changer de micro : ',
+      micNumber:'Microphone {n}', pageTitle:'TransLive — Interprétation en direct', pageDescription:'Plateforme d’interprétation en direct pour églises, conférences et événements.'
+    },
+    en: {
+      tabInterpreter:'🎙️ Interpreter', tabListener:'🎧 Listener', interpreterSpace:'INTERPRETER SPACE',
+      interpreterTitle:'Your voice, live.', interpreterIntro:'Set up your channel and share it with participants.',
+      broadcastSection:'Your broadcast', eventName:'Event name', eventDefault:'Live interpretation',
+      sessionCode:'Session code', sessionPlaceholder:'E.g. SDAQC, church-X', interpreterPassword:'Interpreter password', passwordPlaceholder:'Required to broadcast',
+      equipmentSection:'Your equipment', microphone:'Microphone', defaultMicrophone:'System default microphone',
+      micHint:'Allow microphone access once to see the available devices.', micLevel:'Microphone level',
+      scanToListen:'Scan to listen', qrNote:'Show this QR code on a large screen so participants can scan it with their phones.',
+      listenerSpace:'LISTENER SPACE', listenerTitle:'Listen live.', listenerIntro:'Follow the event in your language, wherever you are.',
+      volume:'Volume', tapNotice:'👆 Tap here to enable audio',
+      listenerNote:'Stay connected during silences — audio resumes automatically.', sourceCode:'Source code',
+      wait:'Waiting', connecting:'Connecting…', connected:'Connected — waiting for audio', listening:'Listening live',
+      pause:'Channel paused — stay connected', reconnecting:'Reconnecting…', listen:'🎧 Listen', stop:'⏹ Stop',
+      tapShort:'Tap to enable audio', audioBlocked:'Audio blocked — reload the page', offline:'Interpreter offline',
+      error:'Error: {detail}', serverError:'Server error: ', badPassword:'Incorrect password', passwordRequired:'Enter the interpreter password.',
+      interpOffline:'Offline', interpConnecting:'Connecting to LiveKit…', interpReconnecting:'Reconnecting…',
+      interpLive:'Live — room: {room}', micStart:'🎙️ Start microphone', micStop:'⏹ Turn off microphone',
+      micDenied:'Microphone access denied.', connectionImpossible:'Connection failed — try again.', listenerConnectionError:'Connection failed — check the session code and try again.',
+      qualityExcellent:'Connection: excellent', qualityGood:'Connection: good', qualityPoor:'Connection: poor — check your network',
+      qualityOther:'Connection: {quality}', listenerCount:'{n} listener{plural} connected',
+      micInterrupted:'Microphone stopped — turn it off and start it again', micSwitchError:'Cannot change microphone: ',
+      micNumber:'Microphone {n}', pageTitle:'TransLive — Live interpretation', pageDescription:'Live interpretation platform for churches, conferences and events.'
+    }
   };
+  let currentLanguage = 'fr';
+  let interpStatusKey = 'interpOffline', interpStatusArgs = {};
+  let audStatusKey = 'wait', audStatusArgs = {};
+  let lastQuality = null;
+  function t(key, args = {}) {
+    return (T[currentLanguage][key] || key).replace(/\{(\w+)\}/g, (_, name) => args[name] ?? '');
+  }
+  function setLanguage(lang) {
+    if (!T[lang]) return;
+    const eventInput = document.getElementById('event-name');
+    const priorDefault = T[currentLanguage].eventDefault;
+    const hasDefaultEvent = eventInput.value === priorDefault;
+    currentLanguage = lang;
+    document.documentElement.lang = lang;
+    document.title = t('pageTitle');
+    document.querySelector('meta[name=description]').content = t('pageDescription');
+    try { localStorage.setItem('translive-language', lang); } catch (_) {}
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+    document.querySelectorAll('.lang-choice').forEach(el => {
+      const active = el.dataset.lang === lang;
+      el.classList.toggle('active', active);
+      el.setAttribute('aria-pressed', String(active));
+    });
+    if (hasDefaultEvent) {
+      eventInput.value = t('eventDefault');
+      document.getElementById('event-label').textContent = eventInput.value;
+    }
+    document.getElementById('mic-select').options[0].textContent = t('defaultMicrophone');
+    document.getElementById('mic-btn').textContent = t(isMicOn ? 'micStop' : 'micStart');
+    document.getElementById('listen-btn').textContent = t(document.getElementById('listen-btn').classList.contains('btn-stop') ? 'stop' : 'listen');
+    document.getElementById('interp-status-text').textContent = t(interpStatusKey, interpStatusArgs);
+    document.getElementById('aud-status-text').textContent = t(audStatusKey, audStatusArgs);
+    if (interpRoom) { updateListenerCount(); if (lastQuality !== null) showQuality(lastQuality); }
+  }
 
   // ═══ TOKEN ═══
   async function getListenerDetails(roomName, identity) {
     const url = `${API_BASE}/listen?room=${encodeURIComponent(roomName)}&name=${encodeURIComponent(identity)}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error('Erreur serveur: ' + res.status);
+    if (!res.ok) throw new Error(t('serverError') + res.status);
     return await res.json();
   }
 
   async function getBroadcastDetails(roomName, identity, password) {
     const url = `${API_BASE}/broadcast?room=${encodeURIComponent(roomName)}&name=${encodeURIComponent(identity)}&password=${encodeURIComponent(password)}`;
     const res = await fetch(url);
-    if (res.status === 401) throw new Error('Mot de passe incorrect');
-    if (!res.ok) throw new Error('Erreur serveur: ' + res.status);
+    if (res.status === 401) throw new Error(t('badPassword'));
+    if (!res.ok) throw new Error(t('serverError') + res.status);
     return await res.json();
   }
 
@@ -506,17 +631,17 @@
     const sessionId = document.getElementById('session-id').value.trim() || 'SDAQC';
     const password = document.getElementById('interp-password').value.trim();
     if (!password) {
-      alert('Veuillez saisir le mot de passe interprète.');
+      alert(t('passwordRequired'));
       return;
     }
-    setInterpStatus('connecting', 'Connexion à LiveKit...');
+    setInterpStatus('connecting', 'interpConnecting');
     try {
       const details = await getBroadcastDetails(sessionId, 'interprete-' + Math.random().toString(36).substr(2,6), password);
       interpRoom = new LK.Room({ disconnectOnPageLeave: false });
 
       interpRoom.on(LK.RoomEvent.ParticipantConnected, updateListenerCount);
       interpRoom.on(LK.RoomEvent.ParticipantDisconnected, updateListenerCount);
-      interpRoom.on(LK.RoomEvent.Reconnecting, () => setInterpStatus('connecting', '⚠️ Reconnexion en cours...'));
+      interpRoom.on(LK.RoomEvent.Reconnecting, () => setInterpStatus('connecting', 'interpReconnecting'));
       interpRoom.on(LK.RoomEvent.Reconnected, () => { refreshLive(); updateListenerCount(); });
       interpRoom.on(LK.RoomEvent.ConnectionQualityChanged, (quality, participant) => {
         if (participant === interpRoom.localParticipant) showQuality(quality);
@@ -532,7 +657,7 @@
 
       refreshLive();
       document.getElementById('mic-btn').className = 'btn btn-stop';
-      document.getElementById('mic-btn').textContent = '⏹ Couper le micro';
+      document.getElementById('mic-btn').textContent = t('micStop');
       document.getElementById('vol-wrap').style.display = 'block';
       document.getElementById('listeners-count').style.display = 'block';
       document.getElementById('conn-quality').style.display = 'block';
@@ -541,23 +666,23 @@
       updateListenerCount();
     } catch(e) {
       console.error(e);
-      setInterpStatus('off', 'Erreur : ' + (e.message || 'connexion impossible'));
-      if (e.name === 'NotAllowedError') alert('Accès au microphone refusé.');
+      setInterpStatus('off', e.message === t('badPassword') ? 'badPassword' : e.name === 'NotAllowedError' ? 'micDenied' : 'connectionImpossible');
+      if (e.name === 'NotAllowedError') alert(t('micDenied'));
     }
   }
 
   function refreshLive() {
     if (!isMicOn || !interpRoom) return;
-    setInterpStatus('live', '🔴 En direct — salle: ' + interpRoom.name);
+    setInterpStatus('live', 'interpLive', { room: interpRoom.name });
   }
 
   async function stopMic() {
     isMicOn = false;
     if (interpRoom) { await interpRoom.disconnect(); interpRoom = null; }
     if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
-    setInterpStatus('off', 'Hors ligne');
+    setInterpStatus('off', 'interpOffline');
     document.getElementById('mic-btn').className = 'btn btn-primary';
-    document.getElementById('mic-btn').textContent = '🎙️ Démarrer le micro';
+    document.getElementById('mic-btn').textContent = t('micStart');
     document.getElementById('vol-wrap').style.display = 'none';
     document.getElementById('vol-fill').style.width = '0%';
     document.getElementById('qr-section').style.display = 'none';
@@ -565,25 +690,27 @@
     document.getElementById('conn-quality').style.display = 'none';
   }
 
-  function setInterpStatus(state, text) {
+  function setInterpStatus(state, key, args = {}) {
+    interpStatusKey = key; interpStatusArgs = args;
     document.getElementById('interp-status').className = 'status-bar status-' + state;
     document.getElementById('interp-dot').className = 'dot dot-' + state;
-    document.getElementById('interp-status-text').textContent = text;
+    document.getElementById('interp-status-text').textContent = t(key, args);
   }
 
   function showQuality(quality) {
+    lastQuality = quality;
     const el = document.getElementById('conn-quality');
     const q = String(quality).toLowerCase();
-    if (q.includes('excellent')) el.textContent = '📶 Connexion : excellente';
-    else if (q.includes('good')) el.textContent = '📶 Connexion : bonne';
-    else if (q.includes('poor')) el.textContent = '⚠️ Connexion : faible — vérifiez le réseau';
-    else el.textContent = '📶 Connexion : ' + quality;
+    if (q.includes('excellent')) el.textContent = t('qualityExcellent');
+    else if (q.includes('good')) el.textContent = t('qualityGood');
+    else if (q.includes('poor')) el.textContent = t('qualityPoor');
+    else el.textContent = t('qualityOther', { quality });
   }
 
   function updateListenerCount() {
     if (!interpRoom) return;
     const n = interpRoom.remoteParticipants.size;
-    document.getElementById('listeners-count').textContent = n + ' auditeur' + (n > 1 ? 's' : '') + ' connecté' + (n > 1 ? 's' : '');
+    document.getElementById('listeners-count').textContent = t('listenerCount', { n, plural: n > 1 ? 's' : '' });
   }
 
   function attachAnalyser() {
@@ -626,9 +753,9 @@
 
   async function startListening() {
     const sessionId = document.getElementById('session-code').value.trim() || 'SDAQC';
-    setAudStatus('connecting', B.connecting);
+    setAudStatus('connecting', 'connecting');
     document.getElementById('listen-btn').className = 'btn btn-stop';
-    document.getElementById('listen-btn').textContent = B.stop;
+    document.getElementById('listen-btn').textContent = t('stop');
 
     try {
       const details = await getListenerDetails(sessionId, 'auditeur-' + Math.random().toString(36).substr(2,8));
@@ -643,20 +770,20 @@
         }
       });
       audRoom.on(LK.RoomEvent.TrackUnsubscribed, () => {
-        if (isListening) setAudStatus('connecting', B.pause);
+        if (isListening) setAudStatus('connecting', 'pause');
       });
-      audRoom.on(LK.RoomEvent.Reconnecting, () => setAudStatus('connecting', B.reconnecting));
-      audRoom.on(LK.RoomEvent.Reconnected, () => setAudStatus('listening', B.listening));
+      audRoom.on(LK.RoomEvent.Reconnecting, () => setAudStatus('connecting', 'reconnecting'));
+      audRoom.on(LK.RoomEvent.Reconnected, () => setAudStatus('listening', 'listening'));
       audRoom.on(LK.RoomEvent.Disconnected, () => {
         if (isListening) resetAudUI();
       });
 
       await audRoom.connect(details.serverUrl, details.participantToken);
       isListening = true;
-      setAudStatus('connecting', B.connected);
+      setAudStatus('connecting', 'connected');
     } catch(e) {
       console.error(e);
-      setAudStatus('off', B.error + (e.message || '...'));
+      setAudStatus('off', 'listenerConnectionError');
       resetAudUI(false);
     }
   }
@@ -665,11 +792,11 @@
     try {
       await audRoom.startAudio();
       await el.play();
-      setAudStatus('listening', B.listening);
+      setAudStatus('listening', 'listening');
       document.getElementById('tap-notice').style.display = 'none';
       requestWakeLock();
     } catch(e) {
-      setAudStatus('connecting', B.tapShort);
+      setAudStatus('connecting', 'tapShort');
       document.getElementById('tap-notice').style.display = 'block';
     }
   }
@@ -681,10 +808,10 @@
       const el = document.getElementById('remote-audio');
       try {
         await el.play();
-        setAudStatus('listening', B.listening);
+        setAudStatus('listening', 'listening');
         requestWakeLock();
       } catch(e) {
-        setAudStatus('off', B.audioBlocked);
+        setAudStatus('off', 'audioBlocked');
       }
     }
   }
@@ -697,17 +824,18 @@
   }
 
   function resetAudUI(resetStatus = true) {
-    if (resetStatus) setAudStatus('off', B.wait);
+    if (resetStatus) setAudStatus('off', 'wait');
     document.getElementById('tap-notice').style.display = 'none';
     document.getElementById('listen-btn').className = 'btn btn-primary';
-    document.getElementById('listen-btn').textContent = B.listen;
+    document.getElementById('listen-btn').textContent = t('listen');
   }
 
-  function setAudStatus(state, text) {
+  function setAudStatus(state, key, args = {}) {
+    audStatusKey = key; audStatusArgs = args;
     const cls = state === 'listening' ? 'listening' : state === 'connecting' ? 'connecting' : 'off';
     document.getElementById('aud-status').className = 'status-bar status-' + cls;
     document.getElementById('aud-dot').className = 'dot dot-' + cls;
-    document.getElementById('aud-status-text').textContent = text;
+    document.getElementById('aud-status-text').textContent = t(key, args);
   }
 
   function setAudVolume(val) {
@@ -748,7 +876,7 @@
         refreshLive();
         attachAnalyser();
       } catch(e) {
-        setInterpStatus('off', 'Micro coupé — cliquez Couper puis Démarrer');
+        setInterpStatus('off', 'micInterrupted');
       }
     }
   }
@@ -767,11 +895,11 @@
       if (!sel) return;
       const current = sel.value;
       const labelsAvailable = mics.some(m => m.label && m.label.length > 0);
-      sel.innerHTML = '<option value="">Microphone par défaut du système</option>';
+      sel.replaceChildren(new Option(t('defaultMicrophone'), ''));
       mics.forEach((m, i) => {
         const opt = document.createElement('option');
         opt.value = m.deviceId;
-        opt.textContent = m.label || ('Microphone ' + (i + 1));
+        opt.textContent = m.label || t('micNumber', { n: i + 1 });
         sel.appendChild(opt);
       });
       if (current) sel.value = current;
@@ -794,11 +922,14 @@
       setTimeout(attachAnalyser, 300);
     } catch(err) {
       console.error('switch mic failed:', err);
-      alert('Impossible de changer de micro : ' + (err.message || err));
+      alert(t('micSwitchError') + (err.message || err));
     }
   });
 
   populateMicList();
+  let savedLanguage = 'fr';
+  try { savedLanguage = localStorage.getItem('translive-language') || 'fr'; } catch (_) {}
+  setLanguage(savedLanguage);
   if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
     navigator.mediaDevices.addEventListener('devicechange', populateMicList);
   }

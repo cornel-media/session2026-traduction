@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 152" role="img" aria-label="TransLive — dialogue">
+
+<g transform="translate(20 20) scale(.875)"><rect width="128" height="128" rx="30" fill="#2F557F"/>
+<path d="M27 34h43a15 15 0 0 1 15 15v24a15 15 0 0 1-15 15H43L29 99V85a15 15 0 0 1-2-12V49a15 15 0 0 1 15-15Z" fill="#F7F9F8"/>
+<path d="M64 43h25a15 15 0 0 1 15 15v22a15 15 0 0 1-15 15h-2l11 10V91a15 15 0 0 1-9 4H64a15 15 0 0 1-15-15V58a15 15 0 0 1 15-15Z" fill="#F47A20"/>
+<path d="M45 66h8l6-12 8 23 7-15 4 7h7" fill="none" stroke="#2F557F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<text x="160" y="100" font-family="Avenir Next, Inter, Arial, sans-serif" font-size="70" font-weight="700" letter-spacing="-2.5" fill="#18344E">Trans<tspan fill="#B94F0B">Live</tspan></text>
+</svg>

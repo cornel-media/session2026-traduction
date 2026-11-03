@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Traduction simultanée — Session SDAQC 2026</title>
+<title>TransLive — Traduction simultanée</title>
 <script src="https://cdn.jsdelivr.net/npm/livekit-client@2/dist/livekit-client.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -54,8 +54,8 @@
 <body>
 <div class="container">
   <div class="header">
-    <h1>Traduction simultanée</h1>
-    <p id="event-label">Session SDAQC 2026</p>
+    <h1>TransLive</h1>
+    <p id="event-label">Traduction simultanée</p>
   </div>
   <div class="tabs" id="tabs-bar">
     <button class="tab active" onclick="showTab('interprete')">🎙️ Interprète</button>
@@ -106,7 +106,7 @@
     </div>
     <div class="field">
       <label>Code de session / Session code</label>
-      <input type="text" id="session-code" value="AQM-2026">
+      <input type="text" id="session-code" value="demo">
     </div>
     <button class="btn btn-primary" id="listen-btn" onclick="toggleListen()">🎧 Écouter / Listen</button>
     <div class="tap-notice" id="tap-notice" onclick="unlockAudio()">👆 Toucher ici pour activer l'audio<br>Tap here to enable audio</div>
@@ -121,11 +121,11 @@
   <div id="tab-config" class="panel">
     <div class="field">
       <label>Nom de l'événement</label>
-      <input type="text" id="event-name" value="Session SDAQC 2026" oninput="document.getElementById('event-label').textContent=this.value">
+      <input type="text" id="event-name" value="Traduction simultanée" oninput="document.getElementById('event-label').textContent=this.value">
     </div>
     <div class="field">
       <label>Code de session (sans espaces)</label>
-      <input type="text" id="session-id" value="AQM-2026">
+      <input type="text" id="session-id" value="demo">
     </div>
     <br>
     <div class="info-box">
@@ -190,7 +190,7 @@
   }
 
   async function startMic() {
-    const sessionId = document.getElementById('session-id').value.trim() || 'AQM-2026';
+    const sessionId = document.getElementById('session-id').value.trim() || 'demo';
     setInterpStatus('connecting', 'Connexion à LiveKit...');
     try {
       const details = await getConnectionDetails(sessionId, 'interprete-' + Math.random().toString(36).substr(2,6));
@@ -307,7 +307,7 @@
   }
 
   async function startListening() {
-    const sessionId = document.getElementById('session-code').value.trim() || 'AQM-2026';
+    const sessionId = document.getElementById('session-code').value.trim() || 'demo';
     setAudStatus('connecting', B.connecting);
     document.getElementById('listen-btn').className = 'btn btn-stop';
     document.getElementById('listen-btn').textContent = B.stop;

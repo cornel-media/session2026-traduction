@@ -747,6 +747,9 @@
 
   async function startListening() {
     const sessionId = document.getElementById('session-code').value.trim() || 'SDAQC';
+    // Remember the code the listener actually used, so a PWA opened from the
+    // home-screen icon next time starts on the same room without a QR scan.
+    try { localStorage.setItem('translive-last-session', sessionId); } catch (_) {}
     setAudStatus('connecting', 'connecting');
     document.getElementById('listen-btn').className = 'btn btn-stop';
     document.getElementById('listen-btn').textContent = t('stop');
@@ -929,12 +932,23 @@
   }
 
   // ═══ MODE AUDITEUR (via QR) ═══
+  // Priority for the listener's session code:
+  //   1) ?session=xxx in URL  → wins, and becomes the new remembered code
+  //   2) last session remembered in localStorage (previous visit on this device)
+  //   3) default "SDAQC" (already set as the input's value in the HTML)
   const params = new URLSearchParams(window.location.search);
-  if (params.get('session')) {
+  const urlSession = params.get('session');
+  let rememberedSession = null;
+  try { rememberedSession = localStorage.getItem('translive-last-session'); } catch (_) {}
+
+  if (urlSession) {
     document.body.classList.add('listener-only');
     document.getElementById('tab-interprete').classList.remove('active');
     document.getElementById('tab-auditeur').classList.add('active');
-    document.getElementById('session-code').value = params.get('session');
+    document.getElementById('session-code').value = urlSession;
+    try { localStorage.setItem('translive-last-session', urlSession); } catch (_) {}
+  } else if (rememberedSession) {
+    document.getElementById('session-code').value = rememberedSession;
   }
 </script>
 </body>
